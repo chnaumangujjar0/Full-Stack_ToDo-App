@@ -1,0 +1,12 @@
+import { Router } from "express";
+import { addTask, deleteTask, getAllTasks, gettaskById, toggleStatus, updateTask } from "../controllers/todo.controller.js";
+
+const router = Router()
+
+router.route("/addtask").post(addTask)
+router.route("/").get(getAllTasks)
+router.route("/:taskId").patch(updateTask)
+router.route("/:taskId").delete(deleteTask)
+router.route("/:taskId").get(gettaskById)
+router.route("/toggle-status/:taskId").patch(toggleStatus)
+export default router

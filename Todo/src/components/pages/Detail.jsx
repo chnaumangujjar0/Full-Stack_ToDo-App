@@ -21,7 +21,7 @@ const Detail = () => {
   }, [])
 
   return (
-    <div className="min-h-screen bg-stone-100 flex justify-center  px-4 py-20">
+    <div className="min-h-screen bg-stone-100 flex justify-center  px-4 py-5 scrollbar-none ">
       <div className="w-full max-w-lg">
         <button
           onClick={() => navigate(-1)}
@@ -44,7 +44,7 @@ const Detail = () => {
 
         {status === "ready" && (
           <div className="relative bg-[#FFFDF8] rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-stone-200 overflow-hidden">
-            <div className="px-8 pt-7 pb-6">
+            <div className="px-8 py-6 pb-4">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono">
                   Task No. {String(id).padStart(4, '0')}
@@ -65,7 +65,7 @@ const Detail = () => {
               <p className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono mb-2">
                 Description
               </p>
-              <p className="text-base leading-relaxed text-stone-700 whitespace-pre-line">
+              <p className="text-base leading-relaxed text-stone-700 wrap-anywhere ">
                 {description}
               </p>
             </div>

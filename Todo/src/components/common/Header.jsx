@@ -2,12 +2,13 @@ import React, { useState } from 'react'
 import { Link } from 'react-router'
 
 export const Header = () => {
-  const [isOpen, setIsOpen] = useState(true)
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
     <div
-      className={`h-full shrink-0 flex flex-col justify-between  bg-indigo-900 text-stone-200 py-6 sm:py-8 transition-all duration-300 overflow-hidden ${
-        isOpen ? 'w-44 sm:w-56 px-4 sm:px-6' : 'w-16 px-3'
+      className={`h-full shrink-0 flex flex-col justify-between bg-emerald-900 text-stone-200 py-6 sm:py-8 transition-all duration-300 overflow-hidden ${
+        isOpen ? 'absolute z-40 w-44 sm:w-56 px-4 sm:px-6 sm:relative sm:z-0 ' : 'w-12 sm:w-16 px-3'
+
       }`}
     >
       <div>
@@ -21,7 +22,7 @@ export const Header = () => {
           )}
 
           <button
-            className='w-9 h-9 mt-3 shrink-0 rounded-full border border-white text-white hover:text-black hover:border-black flex items-center justify-center transition-colors'
+            className='w-9 h-9 mt-2 shrink-0 rounded-full border border-white text-white hover:text-black hover:border-black flex items-center justify-center transition-colors'
             onClick={() => setIsOpen(!isOpen)}
           >
             <svg

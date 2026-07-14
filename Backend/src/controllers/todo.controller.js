@@ -32,8 +32,32 @@ const addTask = asyncHandler(async (req, res) =>{
 })
 
 const getAllTasks = asyncHandler(async (req,res) => {
-    const tasks = await Todo.find()
+    const {page = 1, limit = 5, filter = "all"} = req.query
+    let query = {}
+ 
+    if (filter !== "all") {
+        const now = new Date()
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+ 
+        if (filter === "today") {
+            query.createdAt = { $gte: startOfToday }
+        } else if (filter === "yesterday") {
+            const startOfYesterday = new Date(startOfToday)
+            startOfYesterday.setDate(startOfYesterday.getDate() - 1)
+            query.createdAt = { $gte: startOfYesterday, $lt: startOfToday }
+        } else if (filter === "week") {
+            const startOfWeek = new Date(startOfToday)
+            startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay())
+            query.createdAt = { $gte: startOfWeek }
+        } else if (filter === "month") {
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+            query.createdAt = { $gte: startOfMonth }
+        }
+    }
+    const pageNum = (parseInt(page) - 1) * limit
+    const limitNum = parseInt(limit)
 
+    const tasks = await Todo.find(query).sort({createdAt: -1}).skip(pageNum).limit(limit)
     if(!tasks){
         throw new ApiError(400, "Task fetching failed")
     }
@@ -160,11 +184,53 @@ const toggleStatus = asyncHandler(async (req,res) => {
     )
 })
 
+const countData = asyncHandler(async (req,res) => {
+    const data = await Todo.aggregate([
+        {
+            $group: {
+                _id: null,
+                totalTasks: {
+                    $sum: 1
+                },
+
+                completed: {
+                    $sum: {
+                        $cond: ["$completed", 1, 0]
+                    }
+                },
+
+                inCompleted: {
+                    $sum: {
+                        $cond: ["$completed", 0, 1]
+                    }
+                }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                totalTasks: 1,
+                completed: 1,
+                inCompleted: 1
+            }
+        }
+    ])
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            data,
+            "data fetched successfully"
+        )
+    )
+})
+
 export {
     addTask,
     getAllTasks,
     updateTask,
     deleteTask,
     gettaskById,
-    toggleStatus
+    toggleStatus,
+    countData
 }

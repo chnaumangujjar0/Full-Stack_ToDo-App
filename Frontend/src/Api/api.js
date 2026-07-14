@@ -26,9 +26,9 @@ export const deleteTaskById = async (id) => {
     await axios.delete(`http://localhost:8000/api/v1/todo/${id}`)
 }
 
-export const getAllTasks = async (setTask) => {
+export const getAllTasks = async (page = 1, limit = 5, filter = "all") => {
     try {
-    const res = await axios.get("http://localhost:8000/api/v1/todo/");
+    const res = await axios.get(`http://localhost:8000/api/v1/todo/?page=${page}&limit=${limit}&filter=${filter}`);
     return res.data.data
   } catch (err) {
     console.log(err);
@@ -38,3 +38,13 @@ export const getAllTasks = async (setTask) => {
 export const  updateStatus = async (id) => {
     await axios.patch(`http://localhost:8000/api/v1/todo/toggle-status/${id}`);
   }
+
+export const totalData = async () => {
+  try {
+    const res = await axios.get("http://localhost:8000/api/v1/todo/count")
+    
+    return res.data.data
+  } catch (error) {
+    console.log(error);
+  }
+}

@@ -1,8 +1,8 @@
 import axios from "axios"
-
+const API_URL = import.meta.env.VITE_API_URL;
  export const postTask = async (title,description) => {
     await axios.post(
-        "http://localhost:8000/api/v1/todo/addTask",
+        `${API_URL}addTask`,
         {
           title: title.trim(),
           description: description.trim(),
@@ -10,25 +10,25 @@ import axios from "axios"
       );
 }
 export const getSingleTaskData = async (id) => {
-    const taskData = await axios.get(`http://localhost:8000/api/v1/todo/${id}`)
+    const taskData = await axios.get(`${API_URL}${id}`)
     
     return taskData.data.data
 }
 
 export const updateTaskDetails = async (id,title,description) => {
-    axios.patch(`http://localhost:8000/api/v1/todo/${id}`, {
+    axios.patch(`${API_URL}${id}`, {
         title: title.trim(),
         description: description.trim()
       })
 }
 
 export const deleteTaskById = async (id) => {
-    await axios.delete(`http://localhost:8000/api/v1/todo/${id}`)
+    await axios.delete(`${API_URL}${id}`)
 }
 
-export const getAllTasks = async (page = 1, limit = 5, filter = "all") => {
+export const getAllTasks = async (page = 1, limit = 5, filter = "all", status = "completed") => {
     try {
-    const res = await axios.get(`http://localhost:8000/api/v1/todo/?page=${page}&limit=${limit}&filter=${filter}`);
+    const res = await axios.get(`${API_URL}?page=${page}&limit=${limit}&filter=${filter}&status=${status}`);
     return res.data.data
   } catch (err) {
     console.log(err);
@@ -36,12 +36,12 @@ export const getAllTasks = async (page = 1, limit = 5, filter = "all") => {
 }
 
 export const  updateStatus = async (id) => {
-    await axios.patch(`http://localhost:8000/api/v1/todo/toggle-status/${id}`);
+    await axios.patch(`${API_URL}toggle-status/${id}`);
   }
 
 export const totalData = async () => {
   try {
-    const res = await axios.get("http://localhost:8000/api/v1/todo/count")
+    const res = await axios.get(`${API_URL}count`)
     
     return res.data.data
   } catch (error) {

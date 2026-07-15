@@ -28,12 +28,14 @@ const Home = () => {
   const [incompletedCount, setIncompletedCount] = useState(0);
   const [prevButton, setPrevButton] = useState(false);
   const [dateFilter, setDateFilter] = useState("all")
+  const [statusFilter, setStatusFilter] = useState("none")
   useEffect(() => {
-    getAllTasks(page, limit,dateFilter).then((res) => setTask(res));
-  }, [page, limit, dateFilter]);
+    getAllTasks(page, limit,dateFilter,statusFilter).then((res) => setTask(res));
+  }, [page, limit, dateFilter,statusFilter]);
 
   useEffect(() => {
     totalData().then((res) => {
+      console.log(res)
       setTotalCount(res[0].totalTasks);
       setCompletedCount(res[0].completed);
       setIncompletedCount(res[0].inCompleted);
@@ -77,10 +79,12 @@ const Home = () => {
     const handleSave = async (taskId, title, description) => {
       setIsLoading(true);
       try {
-        await updateTaskDetails(taskId, title, description);
-        await getAllTasks(page, limit).then((res) => setTask(res));
-        toast.dismiss(toastId);
-        setIsToastOpen(false);
+        updateTaskDetails(taskId, title, description).then(()=>{
+          getAllTasks(page, limit,dateFilter,statusFilter).then((res) => setTask(res));
+          toast.dismiss(toastId);
+          setIsToastOpen(false);
+        })
+        
       } catch (err) {
         setIsLoading(false);
         throw err;
@@ -147,7 +151,7 @@ const Home = () => {
     // setIsLoading(true);
     try {
       await deleteTaskById(id);
-      getAllTasks(page, limit).then((res) => setTask(res));
+      getAllTasks(page, limit,dateFilter,statusFilter).then((res) => setTask(res));
       totalData().then((res) => {
         console.log(res[0].totalTasks);
         setTotalCount(res[0].totalTasks);
@@ -279,23 +283,40 @@ const Home = () => {
           </div>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto  px-3 py-2 sm:px-5 flex justify-between align-middle" >
+      <div className="max-w-7xl mx-auto  px-3 py-2 sm:px-5 flex flex-col justify-between align-middle md:flex-row" >
         <h1 className="p-2 text-4xl text-md">Tasks</h1>
-        <div className="flex flex-col gap-1">
-          <label className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono">
-            Filter by date
-          </label>
-          <select
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            className="h-11 px-3 border border-stone-300 rounded-sm text-stone-900 bg-[#FFFDF8] focus:border-stone-500 transition-colors text-sm cursor-pointer"
-          >
-            <option value="all">All</option>
-            <option value="today">Today</option>
-            <option value="yesterday">Yesterday</option>
-            <option value="week">This week</option>
-            <option value="month">This month</option>
-          </select>
+        <div className="flex gap-3 justify-end">
+          <div className="flex flex-col">
+            <label className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono">
+              Filter by Status
+            </label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="h-11 px-3 border border-stone-300 rounded-sm text-stone-900 bg-[#FFFDF8] focus:border-stone-500 transition-colors text-sm cursor-pointer"
+            >
+              <option value="all">All</option>
+              <option value="completed">Completed</option>
+              <option value="incompleted">Incomplete</option>
+            </select>
+          </div>
+          <div className="flex flex-col">
+            <label className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono">
+              Filter by date
+            </label>
+            <select
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="h-11 px-3 border border-stone-300 rounded-sm text-stone-900 bg-[#FFFDF8] focus:border-stone-500 transition-colors text-sm cursor-pointer"
+            >
+              <option value="all">All</option>
+              <option value="today">Today</option>
+              <option value="yesterday">Yesterday</option>
+              <option value="week">This week</option>
+              <option value="month">This month</option>
+            </select>
+          </div>
+          
         </div>
       </div>
       <div className="max-w-7xl mx-auto bg-stone-100 mt-0 flex justify-start px-3 sm:px-5 ">
@@ -391,7 +412,7 @@ const Home = () => {
           Prev
         </button>
         <button
-          className={`bg-emerald-900 text-sm px-3 py-1.5 rounded-1.5xl ${totalCount / limit > page ? "block" : "hidden"}`}
+          className={`bg-emerald-900 text-sm px-3 py-1.5 rounded-1.5xl ${(totalCount / limit) > page && task.length / limit >= 1  ? "block" : "hidden"}`}
           onClick={nextpage}
         >
           {" "}

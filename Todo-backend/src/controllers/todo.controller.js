@@ -5,16 +5,21 @@ import { ApiResponse } from "../utils/apiResponse.js";
 import { isValidObjectId } from "mongoose";
 
 const addTask = asyncHandler(async (req, res) => {
-  const { title, description, completed = false } = req.body;
+  const { title, description, status = "pending" } = req.body;
+  const validStatuses = ["pending", "in-progress", "completed"];
 
   if (!(title || description)) {
     throw new ApiError(400, "title and description is required");
   }
 
+  if (!validStatuses.includes(status)) {
+    throw new ApiError(400, "Status must be pending, in-progress, or completed");
+  }
+
   const todo = await Todo.create({
     title: title.trim(),
     description: description.trim(),
-    completed,
+    status,
   });
 
   if (!todo) {
@@ -27,9 +32,8 @@ const addTask = asyncHandler(async (req, res) => {
 });
 
 const getAllTasks = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 5, filter = "all", status = "completed" } = req.query;
+  const { page = 1, limit = 5, filter = "all", status = "all" } = req.query;
   let query = {};
-  let query2 = {}
   const now = new Date();
 
   if (filter === "today") {
@@ -71,21 +75,22 @@ const getAllTasks = asyncHandler(async (req, res) => {
       $gte: month,
     };
   }
-  if(status == "completed"){
-      query2.completed = true
-  } 
-  if(status == "incompleted"){
-      query2.completed = false
+  if (status === "completed") {
+    query.status = "completed";
+  } else if (status === "pending") {
+    query.status = "pending";
+  } else if (status === "in-progress") {
+    query.status = "in-progress";
   }
+
   const pageNum = (parseInt(page) - 1) * limit;
   const limitNum = parseInt(limit);
 
   const tasks = await Todo.find(query)
-    .find(query2)
     .sort({ createdAt: -1 })
     .skip(pageNum)
     .limit(limit)
-
+  
   if (!tasks) {
     throw new ApiError(400, "Task fetching failed");
   }
@@ -163,20 +168,31 @@ const gettaskById = asyncHandler(async (req, res) => {
 
 const toggleStatus = asyncHandler(async (req, res) => {
   const { taskId } = req.params;
+  const { status } = req.body;
+  const validStatuses = ["pending", "in-progress", "completed"];
 
   if (!isValidObjectId(taskId)) {
     throw new ApiError(400, "invalid object id");
   }
+
+  if (!status || !validStatuses.includes(status)) {
+    throw new ApiError(
+      400,
+      "Status is required and must be one of: pending, in-progress, completed",
+    );
+  }
+
   const existingTask = await Todo.findById(taskId);
 
   if (!existingTask) {
-    throw new ApiError(400, "this atsk does not exist!");
+    throw new ApiError(400, "this task does not exist!");
   }
+
   const task = await Todo.findByIdAndUpdate(
     taskId,
     {
       $set: {
-        completed: !existingTask.completed,
+        status,
       },
     },
     { returnDocument: "after" },
@@ -184,7 +200,7 @@ const toggleStatus = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, task, "Task toogled successfully"));
+    .json(new ApiResponse(200, task, "Task status updated successfully"));
 });
 
 const countData = asyncHandler(async (req, res) => {
@@ -198,13 +214,18 @@ const countData = asyncHandler(async (req, res) => {
 
         completed: {
           $sum: {
-            $cond: ["$completed", 1, 0],
+            $cond: [{ $eq: ["$status", "completed"] }, 1, 0],
           },
         },
 
-        inCompleted: {
+        pending: {
           $sum: {
-            $cond: ["$completed", 0, 1],
+            $cond: [{ $eq: ["$status", "pending"] }, 1, 0],
+          },
+        },
+        inProgess: {
+          $sum: {
+            $cond: [{ $eq: ["$status", "in-progress"] }, 1, 0],
           },
         },
       },
@@ -214,7 +235,8 @@ const countData = asyncHandler(async (req, res) => {
         _id: 0,
         totalTasks: 1,
         completed: 1,
-        inCompleted: 1,
+        pending: 1,
+        inProgess: 1
       },
     },
   ]);

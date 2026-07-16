@@ -11,6 +11,7 @@ import {
 } from "../../Api/api.js";
 import { Link } from "react-router";
 import Loader from "../common/Loader.jsx";
+import StatusDropdown from "../common/StatusDropdown.jsx";
 import { toast, ToastContainer } from "react-toastify";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -20,12 +21,14 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isToastOpen, setIsToastOpen] = useState(false);
   const [updatingId, setUpdatingId] = useState("");
+  const [taskStatus, setTaskStatus] = useState("pending");
   const [page, setPage] = useState(1);
   const limit = 5;
   const titleInputRef = useRef(null);
   const [totalCount, setTotalCount] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
-  const [incompletedCount, setIncompletedCount] = useState(0);
+  const [pendingCount, setpendingCount] = useState(0);
+  const [inProgressCount, setInProgressCount] = useState(0);
   const [prevButton, setPrevButton] = useState(false);
   const [dateFilter, setDateFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("none")
@@ -38,7 +41,8 @@ const Home = () => {
       console.log(res)
       setTotalCount(res[0].totalTasks);
       setCompletedCount(res[0].completed);
-      setIncompletedCount(res[0].inCompleted);
+      setpendingCount(res[0].pending);
+      setInProgressCount(res[0].inProgess);
     });
   }, []);
 
@@ -54,15 +58,16 @@ const Home = () => {
     onSubmit: async (values, { resetForm }) => {
       setIsLoading(true);
       try {
-        await postTask(values.title, values.description);
+        await postTask(values.title, values.description, taskStatus);
         resetForm();
-        getAllTasks(page, limit).then((res) => setTask(res));
+        setTaskStatus("pending");
+        getAllTasks(page, limit, dateFilter, statusFilter).then((res) => setTask(res));
 
         totalData().then((res) => {
           console.log(res[0].totalTasks);
           setTotalCount(res[0].totalTasks);
           setCompletedCount(res[0].completed);
-          setIncompletedCount(res[0].inCompleted);
+          setpendingCount(res[0].inCompleted);
         });
       } catch (error) {
         toast.error("Couldn't save task, try again.");
@@ -165,18 +170,19 @@ const Home = () => {
     }
   }
 
-  async function updateTaskStatus(id) {
+  async function updateTaskStatus(id, status) {
     setUpdatingId(id);
     try {
-      await updateStatus(id);
-      getAllTasks(page, limit).then((res) => setTask(res));
+      await updateStatus(id, status);
+      getAllTasks(page, limit, dateFilter, statusFilter).then((res) => setTask(res));
       totalData().then((res) => {
         setTotalCount(res[0].totalTasks);
         setCompletedCount(res[0].completed);
-        setIncompletedCount(res[0].inCompleted);
+        setInProgressCount(res[0].inProgess);
+        setpendingCount(res[0].pending);
       });
     } catch (error) {
-      toast.error("Couldn't update task Status, try again.");
+      toast.error("Couldn't update task status, try again.");
     } finally {
       setUpdatingId("");
     }
@@ -193,6 +199,11 @@ const Home = () => {
   const prevPage = async () => {
     setPage(page - 1);
   };
+
+  const handleDateFilterChange = (e) => {
+    setStatusFilter(e.target.value);
+    setPage(1);
+  }
   return (
     <>
       <Loader isLoading={isLoading} />
@@ -251,12 +262,22 @@ const Home = () => {
             >
               Add task
             </button>
+            <div className="flex flex-col gap-2">
+            <label className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono">
+              Task Status
+            </label>
+            <StatusDropdown
+              selectedStatus={taskStatus}
+              onSelect={setTaskStatus}
+              buttonClass="w-full justify-between"
+            />
+          </div>
           </div>
         </form>
 
         <div className="p-4 sm:p-6 lg:p-8 bg-[#FFFDF8] rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-stone-200 w-full h-full flex items-center justify-center">
-          <div className="grid grid-cols-3 gap-2 sm:gap-4 lg:gap-6 w-full">
-            <div className="aspect-square border-2 border-indigo-900 rounded-2xl bg-gray-200 text-indigo-900 shadow-2xl p-2 sm:p-4 lg:p-6 flex flex-col justify-center items-center text-center">
+          <div className="grid grid-cols-4  gap-2  w-full">
+            <div className="aspect-square border-2 border-indigo-900 rounded-2xl bg-gray-200 text-indigo-900 shadow-2xl  sm:p-4 lg:p-6 flex flex-col justify-center items-center text-center">
               <p className="mb-0.5 sm:mb-2 text-[10px] sm:text-sm lg:text-base leading-tight">
                 Total
               </p>
@@ -264,7 +285,7 @@ const Home = () => {
                 {totalCount}
               </strong>
             </div>
-            <div className="aspect-square border-2 border-emerald-800 rounded-2xl bg-gray-200 text-emerald-800 shadow-2xl p-2 sm:p-4 lg:p-6 flex flex-col justify-center items-center text-center">
+            <div className="aspect-square border-2 border-emerald-800 rounded-2xl bg-gray-200 text-emerald-800 shadow-2xl sm:p-4 lg:p-6 flex flex-col justify-center items-center text-center">
               <p className="mb-0.5 sm:mb-2 text-[10px] sm:text-sm lg:text-base leading-tight">
                 Completed
               </p>
@@ -272,19 +293,28 @@ const Home = () => {
                 {completedCount}
               </strong>
             </div>
-            <div className="aspect-square border-2 border-amber-800 rounded-2xl bg-gray-200 text-amber-800 shadow-2xl p-2 sm:p-4 lg:p-6 flex flex-col justify-center items-center text-center">
+            <div className="aspect-square border-2 border-amber-800 rounded-2xl bg-gray-200 text-amber-800 shadow-2xl   sm:p-4 lg:p-6 flex flex-col justify-center items-center text-center">
               <p className="mb-0.5 sm:mb-2 text-[10px] sm:text-sm lg:text-base leading-tight">
-                InCompleted
+                Pending
               </p>
               <strong className="text-base sm:text-2xl lg:text-3xl">
-                {incompletedCount}
+                {pendingCount}
+              </strong>
+            </div>
+            <div className="aspect-square border-2 border-amber-800 rounded-2xl bg-gray-200 text-amber-800 shadow-2xl   sm:p-4 lg:p-6 flex flex-col justify-center items-center text-center">
+              <p className="mb-0.5 sm:mb-2 text-[10px] sm:text-sm lg:text-base leading-tight">
+                InProgress
+              </p>
+              <strong className="text-base sm:text-2xl lg:text-3xl">
+                {inProgressCount}
               </strong>
             </div>
           </div>
         </div>
       </div>
+
       <div className="max-w-7xl mx-auto  px-3 py-2 sm:px-5 flex flex-col justify-between align-middle md:flex-row" >
-        <h1 className="p-2 text-4xl text-md">Tasks</h1>
+        <h1 className="p-2 text-2xl sm:text-3xl md:text-4xl">Tasks</h1>
         <div className="flex gap-3 justify-end">
           <div className="flex flex-col">
             <label className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono">
@@ -292,12 +322,13 @@ const Home = () => {
             </label>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-11 px-3 border border-stone-300 rounded-sm text-stone-900 bg-[#FFFDF8] focus:border-stone-500 transition-colors text-sm cursor-pointer"
+              onChange={(e) => handleDateFilterChange(e)}
+              className="h-8 px-1 sm:px-2 md:px-3 border border-stone-300 rounded-sm text-stone-900 bg-[#FFFDF8] focus:border-stone-500 transition-colors text-sm cursor-pointer"
             >
               <option value="all">All</option>
+              <option value="pending">Pending</option>
+              <option value="in-progrss">In-progress</option>
               <option value="completed">Completed</option>
-              <option value="incompleted">Incomplete</option>
             </select>
           </div>
           <div className="flex flex-col">
@@ -307,7 +338,7 @@ const Home = () => {
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="h-11 px-3 border border-stone-300 rounded-sm text-stone-900 bg-[#FFFDF8] focus:border-stone-500 transition-colors text-sm cursor-pointer"
+              className="h-8 px-1 sm:px-2 md:px-3 border border-stone-300 rounded-sm text-stone-900 bg-[#FFFDF8] focus:border-stone-500 transition-colors text-sm cursor-pointer"
             >
               <option value="all">All</option>
               <option value="today">Today</option>
@@ -319,6 +350,7 @@ const Home = () => {
           
         </div>
       </div>
+
       <div className="max-w-7xl mx-auto bg-stone-100 mt-0 flex justify-start px-3 sm:px-5 ">
         <ul className="pb-10 flex flex-col gap-3 sm:gap-4 w-full mx-auto bg-stone-100 ">
           {task.length == 0 ? (
@@ -330,19 +362,9 @@ const Home = () => {
               return (
                 <li
                   key={obj._id}
-                  className="relative w-full flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 bg-[#FFFDF8] rounded-sm px-3 sm:px-6 lg:px-8 py-4 sm:py-5 border border-stone-200 shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden"
+                  className="relative w-full flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 bg-[#FFFDF8] rounded-sm px-3 sm:px-6 lg:px-8 py-4 sm:py-5 border border-stone-200 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
                 >
-                  <button
-                    disabled={updatingId === obj._id}
-                    className={`relative w-6 h-6 shrink-0 rounded-full border-2 border-stone-400 ${obj.completed ? "bg-stone-900 border-stone-900" : "bg-transparent"} flex items-center justify-center`}
-                    onClick={(e) => updateTaskStatus(obj._id)}
-                  >
-                    {updatingId === obj._id && (
-                      <span className="absolute left-full ml-2 top-1/2 -translate-y-1/2 whitespace-nowrap px-3 py-1 rounded-2xl bg-emerald-900 text-amber-50 text-xs">
-                        Saving...
-                      </span>
-                    )}
-                  </button>
+                  
 
                   <div className="flex-1 min-w-0 basis-full sm:basis-auto order-3 sm:order-0">
                     <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
@@ -352,13 +374,18 @@ const Home = () => {
                         </span>
                       </Link>
                       <span
-                        className={`text-[10px] tracking-[0.15em] uppercase px-2 py-0.5 rounded-sm shrink-0 ${obj.completed ? "bg-emerald-800 text-emerald-50" : "bg-amber-600 text-amber-50"}`}
+                        className={`text-[10px] tracking-[0.15em] uppercase px-2 py-0.5 rounded-sm shrink-0 ${obj.status != "pending" ? "bg-emerald-800 text-emerald-50" : "bg-amber-600 text-amber-50"}`}
                       >
-                        {obj.completed ? "Completed" : "Incomplete"}
+                        {obj.status == "pending" ? "Pending" : obj.status == "in-progress" ? "in-progress" : "Completed"}
                       </span>
                     </div>
                   </div>
-
+                  <StatusDropdown
+                    selectedStatus={obj.status}
+                    onSelect={(status) => updateTaskStatus(obj._id, status)}
+                    disabled={updatingId === obj._id}
+                    buttonClass="h-8 px-3"
+                  />
                   <div className="flex items-center gap-2 ml-auto sm:ml-0 z-40">
                     <button
                       className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-stone-300 text-stone-500 hover:text-stone-800 hover:border-stone-500 flex items-center justify-center transition-colors"
@@ -420,7 +447,7 @@ const Home = () => {
         </button>
       </div>
 
-      <div className="flex justify-end mb-2 px-4 ">
+      <div className="flex justify-end pt-0 mb-2 px-4 absolute right-2 text-sm font-mono">
         <p>Page {page}</p>
       </div>
     </>
@@ -467,7 +494,7 @@ const EditTaskToast = ({
         placeholder="Title"
       />
       <textarea
-        className="min-h-24 sm:min-h-28 border border-stone-300 rounded-sm text-stone-900 bg-white focus:border-stone-500 transition-colors text-sm resize-none"
+        className="min-h-24 sm:min-h-28 border p-3 border-stone-300 rounded-sm text-stone-900 bg-white focus:border-stone-500 transition-colors text-sm resize-none"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Description"

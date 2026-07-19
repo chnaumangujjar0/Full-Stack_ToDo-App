@@ -8,6 +8,8 @@ import Layout from './Layout'
 import Home from './components/pages/Home'
 import Detail from './components/pages/Detail'
 import History from './components/pages/History'
+import Login from './components/pages/Login'
+import SignUp from './components/pages/SignUp'
 
 
 function App() {
@@ -15,15 +17,16 @@ function App() {
   
   return (
     <>
-      <BrowserRouter>
+      
       <Routes>
+          <Route path='/login' element={<Login/>} />
+          <Route path='/signup' element={<SignUp/>} />
           <Route element={<Layout/>}>
             <Route path='/' element={<Home/>}/>
             <Route path='/:id' element={<Detail/>} />
-            <Route path='/history' element={<History/>}/>
+            <Route path='/history' element={<History/>}/> 
           </Route>
         </Routes>
-      </BrowserRouter>
     </>
   )
 }

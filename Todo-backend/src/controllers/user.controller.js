@@ -33,25 +33,19 @@ const registerUser = asyncHandler(async (req,res) => {
         throw new ApiError(400,"Invaid email address")
     }
 
-    const avatarLocalPath = req.files?.avatar[0].path
-    const coverImageLocalPath = req.files?.coverImage[0].path
-    if(!avatarLocalPath || !coverImageLocalPath){
-        throw new ApiError(400,"both Files are required")
-    }
-    const avatar = await uploadToCloudinary(avatarLocalPath)
-    const coverImage = await uploadToCloudinary(coverImageLocalPath)
+    const alreadyExistUser = await User.find({
+        email: email.trim(),
+        username: username.trim()
+    })
 
-    if(!avatar || !avatar){
-        throw new ApiError(400,"Error while Uploading file to cloudinary")
+    if(!alreadyExistUser){
+        throw new ApiError(400,"Username with this email or username already exist!")
     }
-
     const user = await User.create({
         fullName: fullName.trim(),
         email: email.trim(),
         username: username.trim(),
         password: password.trim(),
-        avatar: avatar?.url,
-        coverImage: coverImage?.url
     })
     const existedUser = await User.findById(user._id).select("-password -refreshToken")
     if(!existedUser){
@@ -66,6 +60,51 @@ const registerUser = asyncHandler(async (req,res) => {
     )
 })
 
+const uploadAvatar = asyncHandler(async (req,res) => {
+    console.log(req.file)
+    const avatarLocalPath = req.file.path
+    if(!avatarLocalPath){
+        throw new ApiError(400,"Avtar file is required")
+    }
+
+    const avatar = await uploadToCloudinary(avatarLocalPath)
+    if(!avatar){
+        throw new ApiError(400,"File is not uploaded to cloudinary")
+    }
+
+    req.user.avatar = avatar.url
+    await req.user.save({validateBeforeSave: true})
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            {},
+            "Avatar uploaded Successfully"
+        )
+    )
+})
+
+const uploadCoverImage = asyncHandler(async (req,res) => {
+    console.log(req.file)
+    const coverImageLocalPath = req.file.path
+    if(!coverImageLocalPath){
+        throw new ApiError(400,"CoverImage file is required")
+    }
+
+    const coverImage = await uploadToCloudinary(coverImageLocalPath)
+    if(!coverImage){
+        throw new ApiError(400,"File is not uploaded to cloudinary")
+    }
+
+    req.user.coverImage = coverImage.url
+    await req.user.save({validateBeforeSave: true})
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            {},
+            "coverImage uploaded Successfully"
+        )
+    )
+})
 const login = asyncHandler(async (req,res) => {
     const {username, email, password} = req.body
     if(!username && !email){
@@ -160,4 +199,29 @@ const refreshAccessToken = asyncHandler(async (req,res) => {
     }
 })
 
-export {registerUser,login,refreshAccessToken}
+const logout = asyncHandler(async (req,res) => {
+    const user = await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $unset: {
+                refreshToken: 1
+            }
+        },
+        {"returnDocument" : "after"}
+    )
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+    return res.status(200)
+    .clearCookie("accessToken",options)
+    .clearCookie("refreshToken",options)
+    .json(
+        new ApiResponse(
+            200,
+            {},
+            "User Logged Out Successfully!"
+        )
+    )
+})
+export {registerUser,login,refreshAccessToken, uploadAvatar, uploadCoverImage}

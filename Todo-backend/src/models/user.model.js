@@ -27,12 +27,10 @@ const userScehma = new Schema({
             required: true
         },
         avatar: {
-            type: String,
-            required: true,
+            type: String
         },
         coverImage: {
-            type: String,
-            required: true
+            type: String
         },
         refreshToken: {
             type: String

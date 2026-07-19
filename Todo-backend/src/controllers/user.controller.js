@@ -25,7 +25,7 @@ import jwt from "jsonwebtoken"
 const registerUser = asyncHandler(async (req,res) => {
     const {fullName, username, email, password} = req.body
 
-    if([fullName, username, email, password].some((field) => field.trim() == "")){
+    if([fullName, username, email, password].some((field) => field.trim() === "")){
         throw new ApiError(400,"All fields are required")
     }
 
@@ -106,13 +106,13 @@ const uploadCoverImage = asyncHandler(async (req,res) => {
     )
 })
 const login = asyncHandler(async (req,res) => {
-    const {username, email, password} = req.body
-    if(!username && !email){
-        throw new ApiError(400,"username or email is required")
+    const {identifier, password} = req.body
+    if(!identifier || !password){
+        throw new ApiError(400,"username or password is required")
     }
 
     const existedUser = await User.findOne({
-        $or: [{email},{username}]
+        $or: [{email: identifier.toLowerCase()},{username:identifier.toLowerCase()}]
     })
 
     if(!existedUser){
@@ -140,7 +140,7 @@ const login = asyncHandler(async (req,res) => {
     .json(
         new ApiResponse(
             200,
-            loggedInUser,
+            {loggedInUser,accessToken,refreshToken},
             "User Loggedin successfully!"
         )
     )

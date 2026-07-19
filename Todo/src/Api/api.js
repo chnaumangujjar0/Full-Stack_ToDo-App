@@ -58,14 +58,24 @@ export const totalData = async () => {
 
 // user apis
 
-export const registerUser = async (fullName, username, email, password) => {
+export const registerUser = async (values) => {
+  console.log(values)
   const res = await axios.post(`${API_URL}user/register`, {
-    fullName,
-    username,
-    email,
-    password
+    fullName: values.fullName.trim(),
+    username: values.username.trim(),
+    email: values.email.trim(),
+    password: values.password.trim()
   })
 
   return res
 
+}
+
+export const loginUser = async (values) => {
+  const res = await axios.post(`${API_URL}user/login`,{
+    identifier: values.emailOrUsername.trim(),
+    password: values.password.trim()
+  })
+
+  return res.data.data;
 }

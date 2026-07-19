@@ -2,6 +2,7 @@ import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from "yup";
 import { Link } from 'react-router';
+import { loginUser } from '../../Api/api';
 export default function Login() {
 
   const validationSchema = Yup.object({
@@ -9,15 +10,17 @@ export default function Login() {
       password: Yup.string().trim().required("password is required"),
     });
   const formik = useFormik({
-    initialValues: {username: "", email:"",password:""},
+    initialValues: {emailOrUsername: "",password:""},
     validationSchema,
-    onSubmit: async function handleSubmit(values,{resetForm}) {
-      try {
-        
-      } catch (error) {
-        
+    onSubmit: async function handleSubmit(values) {
+      
+        loginUser(values).then((res) => {
+          localStorage.setItem("accessToken",res.accessToken)
+          localStorage.setItem("refreshToken",res.refreshToken)
+          
+
+        })
       }
-    }
   })
   return (
     <div className="min-h-screen bg-[#F4F5F7] flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans text-gray-800">
@@ -42,10 +45,15 @@ export default function Login() {
                 id="emailOrUsername"
                 name="emailOrUsername"
                 type="text"
-                required
-                placeholder="john@example.com"
+                placeholder="Enter Email or Username"
+                value={formik.values.title}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
                 className="appearance-none block w-full px-3 py-2 border border-gray-200 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#045D4B] focus:border-[#045D4B] sm:text-sm transition-colors"
               />
+              {formik.touched.emailOrUsername && formik.errors.emailOrUsername && (
+                  <p className="text-red-600 text-xs mt-1">{formik.errors.emailOrUsername}</p>
+                )}
             </div>
 
             {/* Password */}
@@ -57,10 +65,14 @@ export default function Login() {
                 id="password"
                 name="password"
                 type="password"
-                required
                 placeholder="••••••••"
+                value={formik.values.title}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
                 className="appearance-none block w-full px-3 py-2 border border-gray-200 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#045D4B] focus:border-[#045D4B] sm:text-sm transition-colors"
-              />
+              />{formik.touched.password && formik.errors.password && (
+                  <p className="text-red-600 text-xs mt-1">{formik.errors.password}</p>
+                )}
             </div>
 
             <div className="flex items-center justify-between">

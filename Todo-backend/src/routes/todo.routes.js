@@ -7,9 +7,10 @@ import {
     gettaskById, 
     toggleStatus,  
     updateTask } from "../controllers/todo.controller.js";
+import { verifyJwt } from "../middleware/auth.middleware.js";
 
 const router = Router()
-
+router.use(verifyJwt)
 router.route("/addtask").post(addTask)
 router.route("/").get(getAllTasks)
 router.route("/count").get(countData)

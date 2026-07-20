@@ -31,14 +31,15 @@ export default function SignUp() {
         console.log(values)
         await registerUser(values)
         toast.success("Account Created Successfully!")
+        setTimeout(()=>{
+          navigate("/login")
+        },1000)
       } catch (error) {
         console.log(error)
         toast.error(" Account does not created, Try Again" )
       }finally{
         setIsLoading(false)
-        setTimeout(()=>{
-          navigate("/login")
-        },2000)
+        
       }
       
     }

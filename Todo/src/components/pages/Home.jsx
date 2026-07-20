@@ -38,11 +38,10 @@ const Home = () => {
 
   useEffect(() => {
     totalData().then((res) => {
-      console.log(res)
-      setTotalCount(res[0].totalTasks);
-      setCompletedCount(res[0].completed);
-      setpendingCount(res[0].pending);
-      setInProgressCount(res[0].inProgess);
+      setTotalCount(res[0].totalTasks || 0);
+      setCompletedCount(res[0].completed) || 0;
+      setpendingCount(res[0].pending || 0);
+      setInProgressCount(res[0].inProgess || 0);
     });
   }, []);
 

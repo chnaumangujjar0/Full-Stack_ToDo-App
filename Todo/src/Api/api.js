@@ -1,11 +1,13 @@
 import axios from "axios"
 const API_URL = import.meta.env.VITE_API_URL;
-
+import api from "./axiosInstance.js"
+import { useAuth } from "../context/AuthContext.jsx";
+import { useNavigate } from "react-router";
 // todo apis
 
  export const postTask = async (title,description,status = "pending") => {
-    await axios.post(
-        `${API_URL}todo/addTask`,
+    await api.post(
+        `todo/addTask`,
         {
           title: title.trim(),
           description: description.trim(),
@@ -14,26 +16,25 @@ const API_URL = import.meta.env.VITE_API_URL;
       );
 }
 export const getSingleTaskData = async (id) => {
-    const taskData = await axios.get(`${API_URL}todo/${id}`)
+    const taskData = await api.get(`todo/${id}`)
     
     return taskData.data.data
 }
 
 export const updateTaskDetails = async (id,title,description) => {
-    axios.patch(`${API_URL}todo/${id}`, {
+    api.patch(`todo/${id}`, {
         title: title.trim(),
         description: description.trim()
       })
 }
 
 export const deleteTaskById = async (id) => {
-    await axios.delete(`${API_URL}todo/${id}`)
+    await api.delete(`todo/${id}`)
 }
 
 export const getAllTasks = async (page = 1, limit = 5, filter = "all", status = "all") => {
     try {
-    const res = await axios.get(`${API_URL}todo?page=${page}&limit=${limit}&filter=${filter}&status=${status}`);
-    console.log(res.data.data)
+    const res = await api.get(`todo?page=${page}&limit=${limit}&filter=${filter}&status=${status}`);
     return res.data.data
   } catch (err) {
     console.log(err);
@@ -41,14 +42,14 @@ export const getAllTasks = async (page = 1, limit = 5, filter = "all", status = 
 }
 
 export const updateStatus = async (id, status) => {
-    await axios.patch(`${API_URL}todo/toggle-status/${id}`, {
+    await api.patch(`todo/toggle-status/${id}`, {
       status,
     });
   }
 
 export const totalData = async () => {
   try {
-    const res = await axios.get(`${API_URL}todo/count`)
+    const res = await api.get(`todo/count`)
     
     return res.data.data
   } catch (error) {
@@ -72,10 +73,21 @@ export const registerUser = async (values) => {
 }
 
 export const loginUser = async (values) => {
-  const res = await axios.post(`${API_URL}user/login`,{
+  console.log(values)
+  const res = await api.post(`${API_URL}user/login`,{
     identifier: values.emailOrUsername.trim(),
     password: values.password.trim()
   })
 
   return res.data.data;
+}
+
+export const logoutUser = async () => {
+  const navigate = useNavigate()
+  await api.post("user/logout")
+  localStorage.removeItem("accessToken")
+  localStorage.removeItem("refreshToken")
+  const {setUser} = useAuth()
+  setUser(null)
+  navigate("/login")
 }

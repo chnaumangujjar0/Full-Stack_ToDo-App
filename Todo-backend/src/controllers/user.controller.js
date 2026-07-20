@@ -7,17 +7,16 @@ import jwt from "jsonwebtoken"
 
  const generateAccessAndRefreshToken = async (id) => {
     try {
+        console.log(id)
         const user = await User.findById(id)
-    
-        const accessToken = await user.generateAccesToken()
+        const accessToken = await user.generateAccessToken()
         const refreshToken = await user.generateRefreshToken()
-    
-        user.refreshToken = refreshToken
-        await user.save({validateBeforeSave: false})
-    
+        user.refreshToken = refreshToken;
+        await user.save({validateBeforeSave : false})
+        
         return {accessToken,refreshToken}
     } catch (error) {
-        throw new ApiError(400,"Something went Wrong while generating tokens")
+        throw new ApiError(401,"Something went Wrong while generating tokens")
     }
 }
 
@@ -122,11 +121,10 @@ const login = asyncHandler(async (req,res) => {
     const isVslidPassword = await existedUser.isPasswordCorrect(password)
 
     if(!isVslidPassword){
-        throw new ApiError(400,"Invalid password")
+        throw new ApiError(401,"Invalid password")
     }
 
-    const {accessToken, refreshToken} = generateAccessAndRefreshToken(existedUser._id)
-
+    const {accessToken, refreshToken} = await generateAccessAndRefreshToken(existedUser._id)
     const loggedInUser = await User.findById(existedUser._id).select("-password -refreshToken")
 
     const options = {
@@ -140,11 +138,21 @@ const login = asyncHandler(async (req,res) => {
     .json(
         new ApiResponse(
             200,
-            {loggedInUser,accessToken,refreshToken},
+            {user: loggedInUser,accessToken,refreshToken},
             "User Loggedin successfully!"
         )
     )
     
+})
+
+const currentUser = asyncHandler(async (req,res) => {
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            req.user,
+            "User fetched Successfully"
+        )
+    )
 })
 
 const refreshAccessToken = asyncHandler(async (req,res) => {
@@ -224,4 +232,4 @@ const logout = asyncHandler(async (req,res) => {
         )
     )
 })
-export {registerUser,login,refreshAccessToken, uploadAvatar, uploadCoverImage}
+export {registerUser,login,refreshAccessToken, uploadAvatar, uploadCoverImage,logout, currentUser}

@@ -14,6 +14,10 @@ const todoSchema = new Schema(
         type: String,
         enum: ["pending", "in-progress", "completed"],
         default: "pending"
+        },
+        owner: {
+            type: mongoose.Types.ObjectId,
+            ref: "User"
         }
     },
     {timestamps: true}

@@ -2,7 +2,7 @@ import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Todo } from "../models/todo.model.js";
 import { ApiResponse } from "../utils/apiResponse.js";
-import { isValidObjectId } from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 
 const addTask = asyncHandler(async (req, res) => {
   const { title, description, status = "pending" } = req.body;
@@ -20,6 +20,7 @@ const addTask = asyncHandler(async (req, res) => {
     title: title.trim(),
     description: description.trim(),
     status,
+    owner: req.user._id
   });
 
   if (!todo) {
@@ -35,7 +36,7 @@ const getAllTasks = asyncHandler(async (req, res) => {
   const { page = 1, limit = 5, filter = "all", status = "all" } = req.query;
   let query = {};
   const now = new Date();
-
+  query.owner = req.user._id
   if (filter === "today") {
     now.setHours(0, 0, 0, 0);
     query.createdAt = { $gte: now };
@@ -145,7 +146,9 @@ const deleteTask = asyncHandler(async (req, res) => {
   if (!existingTask) {
     throw new ApiError(400, "task is already deleted");
   }
-
+  if(existingTask.owner != req.user._id){
+    throw new ApiError(401,"You are unAuthroze to delete this task")
+  }
   await Todo.deleteOne({ _id: existingTask._id });
 
   return res
@@ -205,6 +208,11 @@ const toggleStatus = asyncHandler(async (req, res) => {
 
 const countData = asyncHandler(async (req, res) => {
   const data = await Todo.aggregate([
+    {
+      $match: {
+        owner: new mongoose.Types.ObjectId(req.user._id)
+      }
+    },
     {
       $group: {
         _id: null,

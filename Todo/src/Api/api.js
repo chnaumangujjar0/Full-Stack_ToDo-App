@@ -2,7 +2,6 @@ import axios from "axios"
 const API_URL = import.meta.env.VITE_API_URL;
 import api from "./axiosInstance.js"
 import { useAuth } from "../context/AuthContext.jsx";
-import { useNavigate } from "react-router";
 // todo apis
 
  export const postTask = async (title,description,status = "pending") => {
@@ -73,8 +72,8 @@ export const registerUser = async (values) => {
 }
 
 export const loginUser = async (values) => {
-  console.log(values)
-  const res = await api.post(`${API_URL}user/login`,{
+  
+  const res = await axios.post(`${API_URL}user/login`,{
     identifier: values.emailOrUsername.trim(),
     password: values.password.trim()
   })
@@ -83,11 +82,20 @@ export const loginUser = async (values) => {
 }
 
 export const logoutUser = async () => {
-  const navigate = useNavigate()
-  await api.post("user/logout")
-  localStorage.removeItem("accessToken")
-  localStorage.removeItem("refreshToken")
   const {setUser} = useAuth()
-  setUser(null)
-  navigate("/login")
+  await api.post("user/logout")
+  
+}
+
+export const updateDetails = async (formData) => {
+  console.log(formData)
+    await api.patch('user/update-details',formData)
+
+}
+
+export const changePassword = async(oldPassword,newPassword) => {
+  await api.patch('/user/change-password',{
+    oldPassword: oldPassword.trim(),
+    newPassword: newPassword.trim()
+  })
 }

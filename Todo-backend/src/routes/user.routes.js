@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { currentUser, login, logout, registerUser, uploadAvatar } from "../controllers/user.controller.js";
+import { changePassword, currentUser, login, logout, registerUser, updateDetails, uploadAvatar } from "../controllers/user.controller.js";
 import {upload} from "../middleware/multer.middleware.js"
 import {verifyJwt} from "../middleware/auth.middleware.js"
 const router = Router()
@@ -10,4 +10,15 @@ router.route("/upload-coverImage").post(upload.single("coverImage"),verifyJwt,up
 router.route("/login").post(login)
 router.route("/logout").post(verifyJwt,logout)
 router.route("/current-user").get(verifyJwt,currentUser)
+router.route("/update-details").patch(upload.fields([
+    {
+        name: "avatarFile",
+        maxCount: 1
+    },
+    {
+        name: "coverFile",
+        maxCount: 1
+    }
+]),verifyJwt,updateDetails)
+router.route("/change-password").patch(verifyJwt,changePassword)
 export default router

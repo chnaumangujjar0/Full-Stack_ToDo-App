@@ -1,4 +1,4 @@
-import React, {  useState } from "react";
+import React, {  useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Link, useNavigate } from "react-router";
@@ -8,21 +8,34 @@ import AuthContext, { useAuth } from "../../context/AuthContext";
 export default function Login() {
   const navigate = useNavigate()
   const {setUser} = useAuth()
+  const [rememberCheck, setRememberCheck] = useState(false)
   const validationSchema = Yup.object({
     emailOrUsername: Yup.string().trim().required("Username or email is required"),
     password: Yup.string().trim().required("password is required"),
   });
+  useEffect(()=>{
+    
+    const username = localStorage.getItem("username")
+    const password = localStorage.getItem("password")
+    formik.values.emailOrUsername = username
+    formik.values.password = password
+    console.log(formik.values.emailOrUsername,formik.values.password)
+    
+  },[])
   const formik = useFormik({
     initialValues: { emailOrUsername: "", password: "" },
     validationSchema,
     onSubmit: async  (values) =>  {
       
         try {
+          if(rememberCheck){
+            localStorage.setItem("username", values.emailOrUsername)
+            localStorage.setItem("password",values.password)
+          }
           const res = await loginUser(values)
           
           localStorage.setItem("accessToken", res.accessToken);
           localStorage.setItem("refreshToken", res.refreshToken);
-
           setUser(res.user)
 
           toast.success('Welcome back!')
@@ -30,12 +43,24 @@ export default function Login() {
             navigate("/")
           },1000)
         } catch (error) {
-          console.log(error.message)
-          const errorMessage = error?.message || "Invalid credentials. Please try again."
-          toast.error(errorMessage);
+          if(error.status == 400){
+              toast.error("Invalid username or email!");
+          }
+          if(error.status == 401){
+            toast.error("Invalid password")
+          }
         } 
     },
   });
+
+  const rememberMe = (e) => {
+    if(e.target.checked){
+      setRememberCheck(true)
+    }else{
+      localStorage.removeItem("username")
+      localStorage.removeItem("password")
+    }
+  }
   return (
     <>
       <ToastContainer position="top-right" />
@@ -109,6 +134,7 @@ export default function Login() {
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
+                    onChange={(e) => rememberMe(e)}
                     className="h-4 w-4 text-[#045D4B] focus:ring-[#045D4B] border-gray-300 rounded cursor-pointer"
                   />
                   <label

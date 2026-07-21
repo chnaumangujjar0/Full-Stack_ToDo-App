@@ -12,6 +12,7 @@ import Login from './components/pages/Login'
 import SignUp from './components/pages/SignUp'
 import { Navigate, Outlet } from 'react-router';
 import { useAuth } from './context/AuthContext'
+import Profile from './components/pages/Profile'
 function App() {
   
   
@@ -25,6 +26,7 @@ function App() {
               <Route path='/' element={<Home/>}/>
               <Route path='/:id' element={<Detail/>} />
               <Route path='/history' element={<History/>}/> 
+              <Route path='/profile' element={<Profile/>}/>
             </Route>
           </Route>
         </Routes>

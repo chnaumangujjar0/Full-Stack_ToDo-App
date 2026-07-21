@@ -118,9 +118,9 @@ const login = asyncHandler(async (req,res) => {
         throw new ApiError(400,"This user with this username or email does not exist!")
     }
 
-    const isVslidPassword = await existedUser.isPasswordCorrect(password)
+    const isValidPassword = await existedUser.isPasswordCorrect(password)
 
-    if(!isVslidPassword){
+    if(!isValidPassword){
         throw new ApiError(401,"Invalid password")
     }
 
@@ -129,20 +129,19 @@ const login = asyncHandler(async (req,res) => {
 
     const options = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production"
+        secure: true,
     }
 
     return res.status(200)
     .cookie("accessToken",accessToken,options)
-    .cookie("refresTokeh",refreshToken)
+    .cookie("refresTokeh",refreshToken,options)
     .json(
         new ApiResponse(
             200,
             {user: loggedInUser,accessToken,refreshToken},
             "User Loggedin successfully!"
         )
-    )
-    
+    ) 
 })
 
 const currentUser = asyncHandler(async (req,res) => {
@@ -232,4 +231,69 @@ const logout = asyncHandler(async (req,res) => {
         )
     )
 })
-export {registerUser,login,refreshAccessToken, uploadAvatar, uploadCoverImage,logout, currentUser}
+
+const updateDetails = asyncHandler(async (req,res) => {
+    const {fullName, email} = req.body
+
+    if(!fullName.trim() || !email.trim()){
+        throw new ApiError(400,"Both fields are required")
+    }
+    const avatar = req.files?.avatarFile[0].path
+    const coverImage = req.files?.coverFile[0].path
+    console.log(req.files)
+    const user = await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {
+                fullName,
+                email
+            }
+        },
+        {"returnDocument" : "after"}
+    )
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            {},
+            "Details updated successfully!"
+        )
+    )
+
+})
+
+const changePassword = asyncHandler(async (req,res) => {
+    const {oldPassword,newPassword} = req.body
+
+    if(!oldPassword || !newPassword){
+        throw new ApiError(400,"Both passwords are required")
+    }
+    const user = await User.findById(req.user._id)
+    const isValidPassword = await user.isPasswordCorrect(oldPassword)
+
+    if(!isValidPassword){
+        throw new ApiError(400,"Invalid old password")
+    }
+
+    user.password = newPassword.trim();
+   await user.save({validateBeforeSave: false})
+
+   return res.status(200).json(
+    new ApiResponse(200,
+        200,
+        {},
+        "Password Updated"
+    )
+   )
+})
+export {
+    registerUser,
+    login,
+    refreshAccessToken, 
+    uploadAvatar, 
+    uploadCoverImage,
+    logout, 
+    currentUser,
+    updateDetails,
+    changePassword
+}

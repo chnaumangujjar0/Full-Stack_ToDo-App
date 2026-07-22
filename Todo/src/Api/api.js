@@ -88,14 +88,22 @@ export const logoutUser = async () => {
 }
 
 export const updateDetails = async (formData) => {
-  console.log(formData)
-    await api.patch('user/update-details',formData)
-
+  for (let [key, value] of formData.entries()) {
+    console.log(key, value);
+}
+  const response = await api.patch('/user/update-details', formData);
+  return response.data;
 }
 
-export const changePassword = async(oldPassword,newPassword) => {
-  await api.patch('/user/change-password',{
-    oldPassword: oldPassword.trim(),
-    newPassword: newPassword.trim()
+export const requestPasswordReset = async() => {
+  const res = await api.post('/user/request-reset-password')
+}
+
+export const verifyPasswordReset = async (newPassword,otp) => {
+  console.log(otp)
+  const res = await api.patch("user/verify-reset-password",{
+    newPassword: newPassword,
+    otp
   })
+  return res.data
 }

@@ -25,7 +25,6 @@ export const Header = () => {
               onClick={() => {
                 closeToast();
                 setDisableBtn(false);
-                setIsLoggingOut(true)
               }}
               className="px-4 py-1.5 rounded-sm border border-stone-300 text-stone-600 text-sm hover:border-stone-500 transition-colors"
             >
@@ -130,6 +129,7 @@ export const Header = () => {
             </li>
           </ul>
         </div>
+
         <div className="flex flex-col align-bottom ">
           <div className="flex justify-start align-middle gap-3">
             <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border border-gray-300">
@@ -138,7 +138,7 @@ export const Header = () => {
                   <img
                     src={user.avatar}
                     alt="User avatar"
-                    className="w-full h-full object-cover"
+                    className="w-20 h-full  sm:h-full object-cover"
                   />
                 </Link>
               ) : (

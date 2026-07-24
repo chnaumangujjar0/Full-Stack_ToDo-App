@@ -1,12 +1,15 @@
 import { Router } from "express";
 import {
+  changeForgotPassword,
   currentUser,
   login,
   logout,
   registerUser,
+  requestForgotPasswordOtp,
   requestPasswordReset,
   updateDetails,
   uploadAvatar,
+  verifyForgotPasswordOtp,
   verifyResetPassword,
 } from "../controllers/user.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
@@ -35,4 +38,7 @@ router.route("/update-details").patch(
 );
 router.route("/request-reset-password").post(verifyJwt,requestPasswordReset)
 router.route("/verify-reset-password").patch(verifyJwt, verifyResetPassword);
+router.route("/request-forgot-password-otp").post(requestForgotPasswordOtp)
+router.route("/verify-forgot-password-otp").post(verifyForgotPasswordOtp)
+router.route("/change-forgot-password").patch(changeForgotPassword)
 export default router;

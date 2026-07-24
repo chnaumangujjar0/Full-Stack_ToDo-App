@@ -13,6 +13,7 @@ import SignUp from './components/pages/SignUp'
 import { Navigate, Outlet } from 'react-router';
 import { useAuth } from './context/AuthContext'
 import Profile from './components/pages/Profile'
+import ForgotPassword from './components/pages/ForgotPassword'
 function App() {
   
   
@@ -21,6 +22,7 @@ function App() {
       <Routes>
           <Route path='/login' element={<Login/>} />
           <Route path='/signup' element={<SignUp/>} />
+          <Route path='/forgot-password' element={<ForgotPassword/>}/>
           <Route element={<ProtectedRoute/>}>
             <Route element={<Layout/>}>
               <Route path='/' element={<Home/>}/>

@@ -107,3 +107,18 @@ export const verifyPasswordReset = async (newPassword,otp) => {
   })
   return res.data
 }
+
+export const requestForgotPasswordOtp = async (email) => {
+  const res = await api.post('user/request-forgot-password-otp',{email: email.trim()})
+  return res.data
+}
+
+export const verifyForgotPasswordOtp = async (otp,email) => {
+  const res = await api.post('user/verify-forgot-password-otp',{otp: otp,email: email.trim()})
+  return res.data
+}
+
+export const changeForgotPasword = async (newPassword,email) => {
+  const res = await api.patch("user/change-forgot-password",{newPassword: newPassword.trim(),email: email.trim()})
+  return res.data
+}

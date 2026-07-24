@@ -13,15 +13,7 @@ export default function Login() {
     emailOrUsername: Yup.string().trim().required("Username or email is required"),
     password: Yup.string().trim().required("password is required"),
   });
-  useEffect(()=>{
-    
-    const username = localStorage.getItem("username")
-    const password = localStorage.getItem("password")
-    formik.values.emailOrUsername = username
-    formik.values.password = password
-    console.log(formik.values.emailOrUsername,formik.values.password)
-    
-  },[])
+  
   const formik = useFormik({
     initialValues: { emailOrUsername: "", password: "" },
     validationSchema,
@@ -53,14 +45,7 @@ export default function Login() {
     },
   });
 
-  const rememberMe = (e) => {
-    if(e.target.checked){
-      setRememberCheck(true)
-    }else{
-      localStorage.removeItem("username")
-      localStorage.removeItem("password")
-    }
-  }
+  
   return (
     <>
       <ToastContainer position="top-right" />
@@ -128,30 +113,16 @@ export default function Login() {
                 )}
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    name="remember-me"
-                    type="checkbox"
-                    onChange={(e) => rememberMe(e)}
-                    className="h-4 w-4 text-[#045D4B] focus:ring-[#045D4B] border-gray-300 rounded cursor-pointer"
-                  />
-                  <label
-                    htmlFor="remember-me"
-                    className="ml-2 block text-sm text-gray-900 cursor-pointer"
-                  >
-                    Remember me
-                  </label>
-                </div>
+              <div className="flex items-center justify-end">
+                
 
                 <div className="text-sm">
-                  <a
-                    href="/forgot-password"
+                  <Link
+                    to="/forgot-password"
                     className="font-medium text-[#045D4B] hover:underline"
                   >
                     Forgot your password?
-                  </a>
+                  </Link>
                 </div>
               </div>
 

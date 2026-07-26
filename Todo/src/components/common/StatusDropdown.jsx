@@ -51,7 +51,7 @@ const StatusDropdown = ({
         type="button"
         onClick={handleToggle}
         disabled={disabled}
-        className={`flex items-center gap-2 px-3 py-2 text-sm rounded-sm border border-stone-300 bg-white text-stone-900 transition-colors ${buttonClass} ${disabled ? "opacity-60 cursor-not-allowed" : "hover:border-stone-500"}`}
+        className={`flex items-center gap-2 px-3 py-2 text-sm rounded-sm border border-stone-300 bg-white text-stone-900 transition-colors ${buttonClass} ${disabled ? "opacity-60 cursor-not-allowed" : "hover:border-stone-500"} dark:bg-gray-700 dark:border-gray-800 dark:text-white`}
       >
         <span>{label}</span>
         <svg
@@ -68,13 +68,13 @@ const StatusDropdown = ({
       </button>
 
       {open && (
-        <div className={`absolute right-0 top-full mt-2 w-40 rounded-sm border border-stone-200 bg-white shadow-lg z-50 ${menuClass}`}>
+        <div className={`absolute right-0 top-full mt-2 w-40 rounded-sm border border-stone-200 bg-white shadow-lg z-50 ${menuClass}dark:bg-gray-700 dark:border-gray-800 dark:text-white`}>
           {STATUS_OPTIONS.map((option) => (
             <button
               key={option.value}
               type="button"
               onClick={() => handleSelect(option.value)}
-              className={`w-full text-left px-3 py-2 text-sm ${selectedStatus === option.value ? "bg-stone-100 font-semibold" : "hover:bg-stone-50"}`}
+              className={`w-full text-left px-3 py-2 text-sm ${selectedStatus === option.value ? "bg-stone-100 font-semibold" : "hover:bg-stone-50"}  dark:text-black`}
             >
               {option.label}
             </button>

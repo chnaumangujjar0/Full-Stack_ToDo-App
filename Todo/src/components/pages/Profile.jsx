@@ -122,7 +122,7 @@ export default function Profile() {
       <ToastContainer position="top-right" />
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8 font-sans text-gray-800 dark:bg-gray-700 dark:border-gray-700 dark:text-white">
         <div className="mb-8">
-          <h1 className="text-3xl font-semibold text-gray-900 dark: text-white">
+          <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">
             Profile Settings
           </h1>
         </div>
@@ -184,7 +184,7 @@ export default function Profile() {
                 <h2 className="text-2xl font-bold text-gray-900 truncate">
                   {user?.fullName || "Loading..."}
                 </h2>
-                <p className="text-sm text-gray-500 font-medium">
+                <p className="text-sm text-gray-500 font-medium dark:text-white">
                   @{user?.username || "username"}
                 </p>
               </div>
@@ -207,7 +207,7 @@ export default function Profile() {
                     id="fullName"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-200 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#045D4B] focus:border-[#045D4B] sm:text-sm transition-colors"
+                    className="appearance-none block w-full px-3 py-2 border border-gray-200 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#045D4B] focus:border-[#045D4B] sm:text-sm transition-colors dark:focus:ring-black dark:focus:border-black"
                   />
                 </div>
 
@@ -223,7 +223,7 @@ export default function Profile() {
                     name="username"
                     id="username"
                     defaultValue={user?.username || ""}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-200 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#045D4B] focus:border-[#045D4B] sm:text-sm transition-colors bg-gray-50 text-gray-500 cursor-not-allowed"
+                    className="appearance-none block w-full px-3 py-2 border border-gray-200 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#045D4B] focus:border-[#045D4B] sm:text-sm transition-colors bg-gray-50 text-gray-500 cursor-not-allowed "
                     disabled
                     title="Username cannot be changed"
                   />
@@ -242,7 +242,7 @@ export default function Profile() {
                     id="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-200 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#045D4B] focus:border-[#045D4B] sm:text-sm transition-colors"
+                    className="appearance-none block w-full px-3 py-2 border border-gray-200 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#045D4B] focus:border-[#045D4B] sm:text-sm transition-colors dark:focus:ring-black dark:focus:border-black"
                   />
                 </div>
               </div>
@@ -283,7 +283,7 @@ export default function Profile() {
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="••••••••"
-                        className="appearance-none block w-full px-3 py-2 border border-gray-200 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#045D4B] focus:border-[#045D4B] sm:text-sm transition-colors pr-10"
+                        className="appearance-none block w-full px-3 py-2 border border-gray-200 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#045D4B] focus:border-[#045D4B] sm:text-sm transition-colors pr-10 dark:focus:ring-black dark:focus:border-black"
                       />
                       <button
                         type="button"

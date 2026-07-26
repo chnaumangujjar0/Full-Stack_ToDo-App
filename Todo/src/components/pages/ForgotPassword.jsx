@@ -95,7 +95,7 @@ export default function ForgotPassword() {
   return (
     <>
       <ToastContainer position="top-right" />
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-sans">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 font-sans ">
         <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-md border border-gray-100">
           {/* Header */}
           <div className="text-center mb-8">

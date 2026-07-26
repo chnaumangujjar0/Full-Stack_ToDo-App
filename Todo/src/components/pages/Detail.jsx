@@ -31,19 +31,19 @@ const Detail = () => {
         </button>
 
         {status === "loading" && (
-          <div className="bg-white rounded-sm shadow-sm border border-stone-200 p-10 text-center text-stone-400 text-sm tracking-wide dark:bg-gray-700 dark">
+          <div className="bg-white rounded-sm shadow-sm border border-stone-200 p-10 text-center text-stone-400 text-sm tracking-wide dark:bg-gray-700 dark:text-white">
             fetching task…
           </div>
         )}
 
         {status === "error" && (
-          <div className="bg-white rounded-sm shadow-sm border border-red-200 p-10 text-center text-red-500 text-sm">
+          <div className="bg-white rounded-sm shadow-sm border border-red-200 p-10 text-center text-red-500 text-sm dark:bg-gray-700 dark:text-white">
             couldn't load this task. try again shortly.
           </div>
         )}
 
         {status === "ready" && (
-          <div className="relative bg-[#FFFDF8] rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-stone-200 overflow-hidden">
+          <div className="relative bg-[#FFFDF8] rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-stone-200 overflow-hidden dark:bg-gray-700 dark:text-white dark:border-gray-800">
             <div className="px-8 py-6 pb-4">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono">
@@ -55,7 +55,7 @@ const Detail = () => {
               </h1>
             </div>
 
-            <div className="relative flex items-center px-2">
+            <div className="relative flex items-center px-2 dark:bg-gray-800">
               <div className="absolute -left-3 w-6 h-6 rounded-full bg-stone-100 border border-stone-200" />
               <div className="flex-1 border-t border-dashed border-stone-300" />
               <div className="absolute -right-3 w-6 h-6 rounded-full bg-stone-100 border border-stone-200" />
@@ -65,7 +65,7 @@ const Detail = () => {
               <p className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono mb-2">
                 Description
               </p>
-              <p className="text-base leading-relaxed text-stone-700 wrap-anywhere ">
+              <p className="text-base leading-relaxed text-stone-700 wrap-anywhere dark:text-white  ">
                 {description}
               </p>
             </div>

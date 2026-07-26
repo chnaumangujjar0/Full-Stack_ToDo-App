@@ -15,20 +15,20 @@ const handleToggleTheme = () =>{
   }
 }
   return (
-    <footer className=" bg-emerald-900  shadow-xs border-0 px-3 dark:bg-gray-800 dark:border-gray-700">
+    <footer className=" bg-emerald-900  shadow-xs border-0 px-2 dark:bg-gray-800 dark:border-gray-700">
       <div className="w-full mx-auto max-w-screen-7xl py-4 px-2 flex justify-between md:flex md:items-center md:justify-between text-white">
-        <span>
+        <span className="text-[13px]">
           © 2026 <a className="hover:underline">ToDo App</a>. All Rights
           Reserved.
         </span>
         <div>
-          {themeMode == "light" ? (
-            <button onClick={handleToggleTheme}>
+          {themeMode != "light" ? (
+            <button onClick={handleToggleTheme} className="bg-black p-2 rounded-full rotate-180 transition-all">
               <svg
                 class="theme-icon sun-icon"
                 xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
+                width="20"
+                height="20"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -49,12 +49,12 @@ const handleToggleTheme = () =>{
             </button>
 
           ): (
-          <button onClick={handleToggleTheme}>
+          <button onClick={handleToggleTheme} className="bg-black p-2 rounded-full rotate-360 ease-in transition-all">
             <svg
               class="theme-icon moon-icon"
               xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"

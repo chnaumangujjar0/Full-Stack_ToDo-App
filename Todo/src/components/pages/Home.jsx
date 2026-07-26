@@ -117,8 +117,8 @@ const Home = () => {
     setIsToastOpen(true);
     toast(
       ({ closeToast }) => (
-        <div className="flex flex-col gap-3 sm:gap-4 m-3 sm:m-4 w-56 sm:w-72 bg-[#FFFDF8] rounded-sm p-4 sm:p-5">
-          <p className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono">
+        <div className="flex flex-col gap-3 sm:gap-4 m-3 sm:m-4 w-56 sm:w-72 bg-[#FFFDF8] rounded-sm p-4 sm:p-5 ">
+          <p className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono ">
             Confirm delete
           </p>
           <p className="font-serif text-lg sm:text-xl text-stone-900 leading-snug">
@@ -210,13 +210,13 @@ const Home = () => {
       {isToastOpen && (
         <div
           className="fixed inset-0 z-40"
-          style={{ background: "rgba(0,0,0,0.05)" }}
+          style={{ background: "rgba(0,0,0,0.05) " }}
         />
       )}
-      <div className="max-w-7xl mx-auto bg-stone-100 px-3 sm:px-5 pt-6 sm:pt-10 pb-6 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-start">
+      <div className="max-w-7xl mx-auto bg-stone-100 px-3 sm:px-5 pt-6 sm:pt-10 pb-6 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-start dark:bg-gray-700 dark:border-gray-700 dark:text-white">
         <form
           onSubmit={formik.handleSubmit}
-          className="p-4 sm:p-6 flex flex-col gap-3 sm:gap-4 w-full bg-[#FFFDF8] rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-stone-200"
+          className="p-4 sm:p-6 flex flex-col gap-3 sm:gap-4 w-full bg-[#FFFDF8] rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-stone-200 dark:bg-gray-700 dark:border-gray-800 dark:text-white"
         >
           <p className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono -mb-1">
             New Task
@@ -224,7 +224,7 @@ const Home = () => {
 
           <div>
             <input
-              className="h-12 sm:h-14 text-base sm:text-lg bg-transparent outline-0 text-stone-900 placeholder:text-stone-400 px-3 border border-stone-300 focus:border-stone-500 rounded-sm w-full transition-colors"
+              className="h-12 sm:h-14 text-base sm:text-lg bg-transparent outline-0 text-stone-900 placeholder:text-stone-400 px-3 border border-stone-300 focus:border-stone-500 rounded-sm w-full transition-colors  dark:text-white"
               ref={titleInputRef}
               type="text"
               name="title"
@@ -240,7 +240,7 @@ const Home = () => {
 
           <div>
             <textarea
-              className="min-h-24 sm:min-h-28 text-base sm:text-lg bg-transparent outline-0 text-stone-900 placeholder:text-stone-400 px-3 py-3 border border-stone-300 focus:border-stone-500 rounded-sm w-full transition-colors resize-none"
+              className="min-h-24 sm:min-h-28 text-base sm:text-lg bg-transparent outline-0 text-stone-900 placeholder:text-stone-400 px-3 py-3 border border-stone-300 focus:border-stone-500 rounded-sm w-full transition-colors resize-none dark:text-white"
               name="description"
               placeholder="Enter description"
               value={formik.values.description}
@@ -268,15 +268,15 @@ const Home = () => {
             <StatusDropdown
               selectedStatus={taskStatus}
               onSelect={setTaskStatus}
-              buttonClass="w-full justify-between"
+              buttonClass="w-full justify-between "
             />
           </div>
           </div>
         </form>
 
-        <div className="p-4 sm:p-6 lg:p-8 bg-[#FFFDF8] rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-stone-200 w-full h-full flex items-center justify-center">
+        <div className="p-4 sm:p-6 lg:p-8 bg-[#FFFDF8] rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-stone-200 w-full h-full flex items-center justify-center dark:bg-gray-700 dark:border-gray-800 ">
           <div className="grid grid-cols-4  gap-2  w-full">
-            <div className="aspect-square border-2 border-indigo-900 rounded-2xl bg-gray-200 text-indigo-900 shadow-2xl  sm:p-4 lg:p-6 flex flex-col justify-center items-center text-center">
+            <div className="aspect-square border-2 border-indigo-900 rounded-2xl bg-gray-200 text-indigo-900 shadow-2xl  sm:p-4 lg:p-6 flex flex-col justify-center items-center text-center dark:bg-gray-900 ">
               <p className="mb-0.5 sm:mb-2 text-[10px] sm:text-sm lg:text-base leading-tight">
                 Total
               </p>
@@ -284,7 +284,7 @@ const Home = () => {
                 {totalCount}
               </strong>
             </div>
-            <div className="aspect-square border-2 border-emerald-800 rounded-2xl bg-gray-200 text-emerald-800 shadow-2xl sm:p-4 lg:p-6 flex flex-col justify-center items-center text-center">
+            <div className="aspect-square border-2 border-emerald-800 rounded-2xl bg-gray-200 text-emerald-800 shadow-2xl sm:p-4 lg:p-6 flex flex-col justify-center items-center text-center dark:bg-gray-900  ">
               <p className="mb-0.5 sm:mb-2 text-[10px] sm:text-sm lg:text-base leading-tight">
                 Completed
               </p>
@@ -292,7 +292,7 @@ const Home = () => {
                 {completedCount}
               </strong>
             </div>
-            <div className="aspect-square border-2 border-amber-800 rounded-2xl bg-gray-200 text-amber-800 shadow-2xl   sm:p-4 lg:p-6 flex flex-col justify-center items-center text-center">
+            <div className="aspect-square border-2 border-amber-800 rounded-2xl bg-gray-200 text-amber-800 shadow-2xl   sm:p-4 lg:p-6 flex flex-col justify-center items-center text-center dark:bg-gray-900">
               <p className="mb-0.5 sm:mb-2 text-[10px] sm:text-sm lg:text-base leading-tight">
                 Pending
               </p>
@@ -300,7 +300,7 @@ const Home = () => {
                 {pendingCount}
               </strong>
             </div>
-            <div className="aspect-square border-2 border-amber-800 rounded-2xl bg-gray-200 text-amber-800 shadow-2xl   sm:p-4 lg:p-6 flex flex-col justify-center items-center text-center">
+            <div className="aspect-square border-2 border-amber-800 rounded-2xl bg-gray-200 text-amber-800 shadow-2xl   sm:p-4 lg:p-6 flex flex-col justify-center items-center text-center dark:bg-gray-900">
               <p className="mb-0.5 sm:mb-2 text-[10px] sm:text-sm lg:text-base leading-tight">
                 InProgress
               </p>
@@ -316,13 +316,13 @@ const Home = () => {
         <h1 className="p-2 text-2xl sm:text-3xl md:text-4xl">Tasks</h1>
         <div className="flex gap-3 justify-end">
           <div className="flex flex-col">
-            <label className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono">
+            <label className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono  ">
               Filter by Status
             </label>
             <select
               value={statusFilter}
               onChange={(e) => handleDateFilterChange(e)}
-              className="h-8 px-1 sm:px-2 md:px-3 border border-stone-300 rounded-sm text-stone-900 bg-[#FFFDF8] focus:border-stone-500 transition-colors text-sm cursor-pointer"
+              className="h-8 px-1 sm:px-2 md:px-3 border border-stone-300 rounded-sm text-stone-900 bg-[#FFFDF8] focus:border-stone-500 transition-colors text-sm cursor-pointer dark:bg-gray-700 dark:border-gray-800 dark:text-white"
             >
               <option value="all">All</option>
               <option value="pending">Pending</option>
@@ -337,7 +337,7 @@ const Home = () => {
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="h-8 px-1 sm:px-2 md:px-3 border border-stone-300 rounded-sm text-stone-900 bg-[#FFFDF8] focus:border-stone-500 transition-colors text-sm cursor-pointer"
+              className="h-8 px-1 sm:px-2 md:px-3 border border-stone-300 rounded-sm text-stone-900 bg-[#FFFDF8] focus:border-stone-500 transition-colors text-sm cursor-pointer dark:bg-gray-700 dark:border-gray-800 dark:text-white"
             >
               <option value="all">All</option>
               <option value="today">Today</option>
@@ -350,8 +350,8 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto bg-stone-100 mt-0 flex justify-start px-3 sm:px-5 ">
-        <ul className="pb-10 flex flex-col gap-3 sm:gap-4 w-full mx-auto bg-stone-100 ">
+      <div className="max-w-7xl mx-auto bg-stone-100 mt-0 flex justify-start px-3 sm:px-5 dark:bg-gray-700 dark:border-gray-800 ">
+        <ul className="pb-10 flex flex-col gap-3 sm:gap-4 w-full mx-auto bg-stone-100 dark:bg-gray-700 dark:border-gray-800 ">
           {task.length == 0 ? (
             <div className="bg-white rounded-sm shadow-sm border border-red-200 p-10 text-center text-red-500 text-sm">
               couldn't load this task. try again shortly.
@@ -361,14 +361,14 @@ const Home = () => {
               return (
                 <li
                   key={obj._id}
-                  className="relative w-full flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 bg-[#FFFDF8] rounded-sm px-3 sm:px-6 lg:px-8 py-4 sm:py-5 border border-stone-200 shadow-[0_1px_3px_rgba(0,0,0,0.06)]"
+                  className="relative w-full flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 bg-[#FFFDF8] rounded-sm px-3 sm:px-6 lg:px-8 py-4 sm:py-5 border border-stone-200 shadow-[0_1px_3px_rgba(0,0,0,0.06)] dark:bg-gray-800 dark:border-gray-700 text-white"
                 >
                   
 
                   <div className="flex-1 min-w-0 basis-full sm:basis-auto order-3 sm:order-0">
                     <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                       <Link to={`/${obj._id}`} className="min-w-0">
-                        <span className="font-serif text-base sm:text-lg text-stone-900 truncate block">
+                        <span className="font-serif text-base sm:text-lg text-stone-900 truncate block dark:text-white">
                           {obj.title}
                         </span>
                       </Link>
@@ -387,7 +387,7 @@ const Home = () => {
                   />
                   <div className="flex items-center gap-2 ml-auto sm:ml-0 z-40">
                     <button
-                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-stone-300 text-stone-500 hover:text-stone-800 hover:border-stone-500 flex items-center justify-center transition-colors"
+                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-stone-300 text-stone-500 hover:text-stone-800 hover:border-stone-500 flex items-center justify-center transition-colors dark:bg-gray-700 dark:border-gray-800 dark:text-white"
                       onClick={(e) => openEditToast(obj._id)}
                     >
                       <svg
@@ -405,7 +405,7 @@ const Home = () => {
                       </svg>
                     </button>
                     <button
-                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-stone-300 text-stone-500 hover:text-red-600 hover:border-red-300 flex items-center justify-center transition-colors"
+                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-stone-300 text-stone-500 hover:text-red-600 hover:border-red-300 flex items-center justify-center transition-colors dark:bg-gray-700 dark:border-gray-800 dark:text-white"
                       onClick={() => confirmDelete(obj._id)}
                     >
                       <svg
@@ -482,18 +482,18 @@ const EditTaskToast = ({
   };
 
   return (
-    <div className="flex flex-col gap-3 m-4 w-64 sm:w-72">
+    <div className="flex flex-col gap-3 m-4 w-64 sm:w-72 ">
       <p className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono">
         Edit task
       </p>
       <input
-        className="h-11 px-3 border border-stone-300 rounded-sm text-stone-900 bg-white focus:border-stone-500 transition-colors text-sm"
+        className="h-11 px-3 border border-stone-300 rounded-sm text-stone-900 bg-white focus:border-stone-500 transition-colors text-sm "
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Title"
       />
       <textarea
-        className="min-h-24 sm:min-h-28 border p-3 border-stone-300 rounded-sm text-stone-900 bg-white focus:border-stone-500 transition-colors text-sm resize-none"
+        className="min-h-24 sm:min-h-28 border p-3 border-stone-300 rounded-sm text-stone-900 bg-white focus:border-stone-500 transition-colors text-sm resize-none "
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Description"

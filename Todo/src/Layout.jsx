@@ -8,7 +8,7 @@ const Layout = () => {
     <div className="h-screen overflow-hidden flex flex-col">
       <div className="flex flex-1 min-h-0">
         <Header />
-        <div className="flex-1 overflow-y-auto min-h-0 bg-stone-100 relative">
+        <div className="flex-1 overflow-y-auto min-h-0 bg-stone-100 relative dark:bg-gray-700 ">
           <Outlet />
         </div>
       </div>

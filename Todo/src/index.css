@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@custom-variant dark (&:where(.dark, .dark *));
 .Toastify__toast-container--top-center {
   top: 50% !important;
   left: 50% !important;

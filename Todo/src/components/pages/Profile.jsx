@@ -120,14 +120,14 @@ export default function Profile() {
   return (
     <>
       <ToastContainer position="top-right" />
-      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8 font-sans text-gray-800">
+      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8 font-sans text-gray-800 dark:bg-gray-700 dark:border-gray-700 dark:text-white">
         <div className="mb-8">
-          <h1 className="text-3xl font-semibold text-gray-900">
+          <h1 className="text-3xl font-semibold text-gray-900 dark: text-white">
             Profile Settings
           </h1>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden dark:bg-gray-700 dark:border-gray-800">
           <div className="relative h-48 sm:h-56 bg-gray-200">
             <img
               src={coverPreview || defaultCover}

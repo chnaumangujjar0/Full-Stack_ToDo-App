@@ -1,7 +1,4 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { useState, useEffect } from 'react'
 import './App.css'
 import { BrowserRouter, Route, Routes } from 'react-router'
 import Layout from './Layout'
@@ -14,9 +11,15 @@ import { Navigate, Outlet } from 'react-router';
 import { useAuth } from './context/AuthContext'
 import Profile from './components/pages/Profile'
 import ForgotPassword from './components/pages/ForgotPassword'
+import Loader from './components/common/Loader'
+import { useTheme } from './context/ThemeContext'
 function App() {
-  
-  
+  const {loading} = useAuth()
+  const {themeMode} = useTheme()
+  useEffect(() => {
+      document.querySelector('html').classList.remove("light","dark")
+      document.querySelector('html').classList.add(themeMode)
+    }, [themeMode])
   return (
     <>
       <Routes>
@@ -42,8 +45,10 @@ export default App
 
 
 export  function ProtectedRoute() {
-  const { user } = useAuth(); 
-  
+  const { user,loading } = useAuth(); 
+  if(loading){
+    return <Loader isLoading={loading} />;
+  }
   if (!user) {
     return <Navigate to="/login" replace />;
   }

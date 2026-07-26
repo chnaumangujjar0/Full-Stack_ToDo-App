@@ -9,39 +9,34 @@ const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchCurrentUser = async () => {
       const token = localStorage.getItem("accessToken");
       
       if (!token) {
-        setLoading(false);
+        if (isMounted) setLoading(false);
         return;
       }
       try {
         const res = await api.get('/user/current-user');
+        if (isMounted) setUser(res.data.data);
         
-        setUser(res.data.data); 
       } catch (err) {
         console.error("Failed to fetch user on reload:", err);
-        setUser(null);
+        if (isMounted)setUser(null);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
 
     fetchCurrentUser();
+    return () => {
+      isMounted = false;
+    };
   }, []);
   return (
     <UserContext.Provider value={{ user, setUser, loading }}>
-      
-      
-      {loading ? (
-        <div className="h-screen w-screen flex items-center justify-center bg-[#F4F5F7]">
-          <h1 className="text-xl font-bold text-[#045D4B]">Loading...</h1>
-        </div>
-      ) : (
-        children
-      )}
-      
+        {children}
     </UserContext.Provider>
   );
 };

@@ -21,7 +21,7 @@ const Detail = () => {
   }, [])
 
   return (
-    <div className="min-h-screen bg-stone-100 flex justify-center  px-4 py-5 scrollbar-none ">
+    <div className="min-h-screen bg-stone-100 flex justify-center  px-4 py-5 scrollbar-none dark:bg-gray-700 dark:border-gray-700 ">
       <div className="w-full max-w-lg">
         <button
           onClick={() => navigate(-1)}
@@ -31,7 +31,7 @@ const Detail = () => {
         </button>
 
         {status === "loading" && (
-          <div className="bg-white rounded-sm shadow-sm border border-stone-200 p-10 text-center text-stone-400 text-sm tracking-wide">
+          <div className="bg-white rounded-sm shadow-sm border border-stone-200 p-10 text-center text-stone-400 text-sm tracking-wide dark:bg-gray-700 dark">
             fetching task…
           </div>
         )}

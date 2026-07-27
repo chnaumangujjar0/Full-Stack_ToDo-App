@@ -213,10 +213,10 @@ const Home = () => {
           style={{ background: "rgba(0,0,0,0.05) " }}
         />
       )}
-      <div className="max-w-7xl mx-auto bg-stone-100 px-3 sm:px-5 pt-6 sm:pt-10 pb-6 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-start dark:bg-gray-700 dark:border-gray-700 dark:text-white">
+      <div className="max-w-7xl mx-auto bg-stone-100 px-3 sm:px-5 pt-6 sm:pt-10 pb-6 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-start dark:bg-gray-800 dark:border-gray-700 dark:text-white">
         <form
           onSubmit={formik.handleSubmit}
-          className="p-4 sm:p-6 flex flex-col gap-3 sm:gap-4 w-full bg-[#FFFDF8] rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-stone-200 dark:bg-gray-700 dark:border-gray-800 dark:text-white"
+          className="p-4 sm:p-6 flex flex-col gap-3 sm:gap-4 w-full bg-[#FFFDF8] rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-stone-200 dark:bg-gray-900 dark:border-gray-800 dark:text-white"
         >
           <p className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono -mb-1">
             New Task
@@ -261,7 +261,7 @@ const Home = () => {
             >
               Add task
             </button>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1">
             <label className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono">
               Task Status
             </label>
@@ -274,7 +274,7 @@ const Home = () => {
           </div>
         </form>
 
-        <div className="p-4 sm:p-6 lg:p-8 bg-[#FFFDF8] rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-stone-200 w-full h-full flex items-center justify-center dark:bg-gray-700 dark:border-gray-800 ">
+        <div className="p-4 sm:p-6 lg:p-8 bg-[#FFFDF8] rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-stone-200 w-full h-full flex items-center justify-center dark:bg-gray-900 dark:border-gray-800 ">
           <div className="grid grid-cols-4  gap-2  w-full">
             <div className="aspect-square border-2 border-indigo-900 rounded-2xl bg-gray-200 text-indigo-900 shadow-2xl  sm:p-4 lg:p-6 flex flex-col justify-center items-center text-center dark:bg-gray-900 ">
               <p className="mb-0.5 sm:mb-2 text-[10px] sm:text-sm lg:text-base leading-tight">
@@ -322,7 +322,7 @@ const Home = () => {
             <select
               value={statusFilter}
               onChange={(e) => handleDateFilterChange(e)}
-              className="h-8 px-1 sm:px-2 md:px-3 border border-stone-300 rounded-sm text-stone-900 bg-[#FFFDF8] focus:border-stone-500 transition-colors text-sm cursor-pointer dark:bg-gray-700 dark:border-gray-800 dark:text-white"
+              className="h-8 px-1 sm:px-2 md:px-3 border border-stone-300 rounded-sm text-stone-900 bg-[#FFFDF8] focus:border-stone-500 transition-colors text-sm cursor-pointer dark:bg-gray-900 dark:border-gray-800 dark:text-white"
             >
               <option value="all">All</option>
               <option value="pending">Pending</option>
@@ -337,7 +337,7 @@ const Home = () => {
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="h-8 px-1 sm:px-2 md:px-3 border border-stone-300 rounded-sm text-stone-900 bg-[#FFFDF8] focus:border-stone-500 transition-colors text-sm cursor-pointer dark:bg-gray-700 dark:border-gray-800 dark:text-white"
+              className="h-8 px-1 sm:px-2 md:px-3 border border-stone-300 rounded-sm text-stone-900 bg-[#FFFDF8] focus:border-stone-500 transition-colors text-sm cursor-pointer dark:bg-gray-900 dark:border-gray-800 dark:text-white"
             >
               <option value="all">All</option>
               <option value="today">Today</option>
@@ -350,8 +350,8 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto bg-stone-100 mt-0 flex justify-start px-3 sm:px-5 dark:bg-gray-700 dark:border-gray-800 ">
-        <ul className="pb-10 flex flex-col gap-3 sm:gap-4 w-full mx-auto bg-stone-100 dark:bg-gray-700 dark:border-gray-800 ">
+      <div className="max-w-7xl mx-auto bg-stone-100 mt-0 flex justify-start px-3 sm:px-5 dark:bg-gray-800 dark:border-gray-800 ">
+        <ul className="pb-10 flex flex-col gap-3 sm:gap-4 w-full mx-auto bg-stone-100 dark:bg-gray-800 dark:border-gray-800 ">
           {task.length == 0 ? (
             <div className="bg-white rounded-sm shadow-sm border border-red-200 p-10 text-center text-red-500 text-sm">
               couldn't load this task. try again shortly.
@@ -361,7 +361,7 @@ const Home = () => {
               return (
                 <li
                   key={obj._id}
-                  className="relative w-full flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 bg-[#FFFDF8] rounded-sm px-3 sm:px-6 lg:px-8 py-4 sm:py-5 border border-stone-200 shadow-[0_1px_3px_rgba(0,0,0,0.06)] dark:bg-gray-800 dark:border-gray-700 text-white"
+                  className="relative w-full flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 bg-[#FFFDF8] rounded-sm px-3 sm:px-6 lg:px-8 py-4 sm:py-5 border border-stone-200 shadow-[0_1px_3px_rgba(0,0,0,0.06)] dark:bg-gray-900 dark:border-gray-700 dark:text-white"
                 >
                   
 

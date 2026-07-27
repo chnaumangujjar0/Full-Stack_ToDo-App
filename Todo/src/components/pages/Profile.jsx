@@ -120,14 +120,14 @@ export default function Profile() {
   return (
     <>
       <ToastContainer position="top-right" />
-      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8 font-sans text-gray-800 dark:bg-gray-700 dark:border-gray-700 dark:text-white">
+      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8 font-sans text-gray-900 dark:bg-gray-800 dark:border-[#cdd3dc] dark:text-white">
         <div className="mb-8">
           <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">
             Profile Settings
           </h1>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden dark:bg-gray-700 dark:border-gray-800">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden dark:bg-gray-900 dark:border-gray-800">
           <div className="relative h-48 sm:h-56 bg-gray-200">
             <img
               src={coverPreview || defaultCover}
@@ -181,7 +181,7 @@ export default function Profile() {
               </div>
 
               <div className="mt-6 sm:mt-0 sm:flex-1 sm:pb-2">
-                <h2 className="text-2xl font-bold text-gray-900 truncate">
+                <h2 className="text-2xl font-bold text-gray-900 truncate dark:text-[#778da9]">
                   {user?.fullName || "Loading..."}
                 </h2>
                 <p className="text-sm text-gray-500 font-medium dark:text-white">
@@ -261,7 +261,7 @@ export default function Profile() {
 
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-[#778da9]">
                     Change Password
                   </h3>
                 </div>

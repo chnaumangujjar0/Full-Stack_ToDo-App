@@ -1,5 +1,6 @@
 import React,{useEffect} from "react";
 import { useTheme } from "../../context/ThemeContext";
+import { Link } from "react-router";
 
 export const Footer = () => {
 
@@ -15,17 +16,17 @@ const handleToggleTheme = () =>{
   }
 }
   return (
-    <footer className=" bg-emerald-900  shadow-xs border-0 px-2 dark:bg-gray-800 dark:border-gray-700">
-      <div className="w-full mx-auto max-w-screen-7xl py-4 px-2 flex justify-between md:flex md:items-center md:justify-between text-white">
-        <span className="text-[13px]">
-          © 2026 <a className="hover:underline">ToDo App</a>. All Rights
+    <footer className=" bg-emerald-900  shadow-xs border-0 px-2 dark:bg-black dark:border-gray-700">
+      <div className="w-full mx-auto max-w-screen-7xl py-3 px-2 flex justify-between md:flex md:items-center md:justify-between text-white">
+        <span className="text-[13px] md:text-[15px] lg:text-[17px] ">
+          © 2026 <Link to="/" className="hover:underline">ToDo App</Link>. All Rights
           Reserved.
         </span>
         <div>
           {themeMode != "light" ? (
-            <button onClick={handleToggleTheme} className="bg-black p-2 rounded-full rotate-180 transition-all">
+            <button onClick={handleToggleTheme} className="bg-gray-700 p-2 rounded-full rotate-180 transition-all">
               <svg
-                class="theme-icon sun-icon"
+                className="theme-icon sun-icon"
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
                 height="20"
@@ -51,7 +52,7 @@ const handleToggleTheme = () =>{
           ): (
           <button onClick={handleToggleTheme} className="bg-black p-2 rounded-full rotate-360 ease-in transition-all">
             <svg
-              class="theme-icon moon-icon"
+              className="theme-icon moon-icon"
               xmlns="http://www.w3.org/2000/svg"
               width="20"
               height="20"

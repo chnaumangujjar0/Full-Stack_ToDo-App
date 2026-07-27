@@ -51,7 +51,7 @@ const StatusDropdown = ({
         type="button"
         onClick={handleToggle}
         disabled={disabled}
-        className={`flex items-center gap-2 px-3 py-2 text-sm rounded-sm border border-stone-300 bg-white text-stone-900 transition-colors ${buttonClass} ${disabled ? "opacity-60 cursor-not-allowed" : "hover:border-stone-500"} dark:bg-gray-700 dark:border-gray-800 dark:text-white`}
+        className={`flex items-center align-middle gap-2 px-3 py-1 text-sm rounded-sm border border-stone-300 bg-white text-stone-900 transition-colors ${buttonClass} ${disabled ? "opacity-60 cursor-not-allowed" : "hover:border-stone-500"} dark:bg-gray-700 dark:border-gray-800 dark:text-white`}
       >
         <span>{label}</span>
         <svg

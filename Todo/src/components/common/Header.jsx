@@ -58,7 +58,7 @@ export const Header = () => {
     <>
       <ToastContainer position="top-center" />
       <div
-        className={`h-full shrink-0 flex flex-col justify-between bg-emerald-900 text-stone-200 py-6 sm:py-8 transition-all duration-300 overflow-hidden dark:bg-gray-800 dark:border-gray-700 ${
+        className={`h-full shrink-0 flex flex-col justify-between bg-emerald-900 text-stone-200 border-white py-6 sm:py-8 transition-all duration-300 overflow-hidden dark:bg-black dark:border-gray-700 ${
           isOpen
             ? "absolute z-40 w-44 sm:w-56 px-4 sm:px-6 sm:relative sm:z-0 "
             : "w-12 sm:w-16 px-3"
@@ -77,7 +77,7 @@ export const Header = () => {
             )}
 
             <button
-              className="w-9 h-9 mt-2 shrink-0 rounded-full border border-white text-white hover:text-black hover:border-black flex items-center justify-center transition-colors"
+              className="w-9 h-9 mt-2 shrink-0 rounded-full border border-white text-white hover:text-red-600 hover:border-red-600 flex items-center justify-center transition-colors"
               onClick={() => setIsOpen(!isOpen)}
             >
               <svg
@@ -157,7 +157,7 @@ export const Header = () => {
           </div>
           {isOpen && (
             <div
-              className="flex justify-between mt-2  text-red-600  hover:bg-black rounded-sm "
+              className="flex justify-between mt-2  text-red-600  hover:bg-stone-800 rounded-sm "
             >
               <button className="p-2 flex gap-6 justify-between" onClick={logout} disabled={disableBtn}>
                 

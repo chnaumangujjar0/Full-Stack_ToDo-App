@@ -25,13 +25,13 @@ const History = () => {
     <>
       <Loader isLoading={isLoading} />
 
-      <div className="max-w-7xl mx-auto bg-stone-100 px-3 sm:px-5 pt-6 sm:pt-10 pb-6 dark:bg-gray-700 dark:border-gray-800">
-        <div className="p-4 sm:p-6 bg-[#FFFDF8] rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-stone-200 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 dark:bg-gray-700 dark:border-gray-800 ">
+      <div className="max-w-7xl mx-auto bg-stone-100 px-3 sm:px-5 pt-6 sm:pt-10 pb-6 dark:bg-gray-800 dark:border-gray-700">
+        <div className="p-4 sm:p-6 bg-[#FFFDF8] rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-stone-200 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 dark:bg-gray-900 dark:border-gray-800 ">
           <div>
             <p className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono mb-1">
               History
             </p>
-            <h1 className="font-serif text-2xl sm:text-3xl text-stone-900">
+            <h1 className="font-serif text-2xl sm:text-3xl text-stone-900 dark:text-white">
               Tasks by date
             </h1>
           </div>
@@ -45,15 +45,15 @@ const History = () => {
               value={selectedDate}
               max={todayStr}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="h-11 px-3 border border-stone-300 rounded-sm text-stone-900 bg-transparent focus:border-stone-500 transition-colors"
+              className="h-11 px-3 border border-stone-300 rounded-sm text-stone-900 bg-transparent focus:border-stone-500 transition-colors dark:text-stone-400 dark:focus:border-stone-400 "
             />
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto bg-stone-100 px-3 sm:px-5 pb-10 dark:bg-gray-700 ">
+      <div className="max-w-7xl mx-auto bg-stone-100 px-3 sm:px-5 pb-10 dark:bg-gray-800 ">
         {filteredTasks.length === 0 ? (
-          <div className="bg-[#FFFDF8] rounded-sm border border-stone-200 p-10 text-center text-stone-400 text-sm dark:bg-gray-800 dark:border-gray-700">
+          <div className="bg-[#FFFDF8] rounded-sm border border-stone-200 p-10 text-center text-stone-400 text-sm dark:bg-gray-900 dark:border-gray-700">
             No tasks found for this date.
           </div>
         ) : (
@@ -61,7 +61,7 @@ const History = () => {
             {filteredTasks.map((obj) => (
               <li
                 key={obj._id}
-                className="relative w-full flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 bg-[#FFFDF8] rounded-sm px-3 sm:px-6 lg:px-8 py-4 sm:py-5 border border-stone-200 shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden dark:bg-gray-700 dark:border-gray-800 dark:text-white"
+                className="relative w-full flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 bg-[#FFFDF8] rounded-sm px-3 sm:px-6 lg:px-8 py-4 sm:py-5 border border-stone-200 shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden dark:bg-gray-900 dark:border-gray-800 dark:text-white"
               >
                 <div
                   className={`w-6 h-6 shrink-0 rounded-full border-2 border-stone-400 ${

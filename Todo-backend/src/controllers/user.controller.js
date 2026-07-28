@@ -83,43 +83,7 @@ const registerUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, existedUser, "user registered successfully!"));
 });
 
-const uploadAvatar = asyncHandler(async (req, res) => {
-  console.log(req.file);
-  const avatarLocalPath = req.file.path;
-  if (!avatarLocalPath) {
-    throw new ApiError(400, "Avtar file is required");
-  }
 
-  const avatar = await uploadToCloudinary(avatarLocalPath);
-  if (!avatar) {
-    throw new ApiError(400, "File is not uploaded to cloudinary");
-  }
-
-  req.user.avatar = avatar.url;
-  await req.user.save({ validateBeforeSave: true });
-  return res
-    .status(200)
-    .json(new ApiResponse(200, {}, "Avatar uploaded Successfully"));
-});
-
-const uploadCoverImage = asyncHandler(async (req, res) => {
-  console.log(req.file);
-  const coverImageLocalPath = req.file.path;
-  if (!coverImageLocalPath) {
-    throw new ApiError(400, "CoverImage file is required");
-  }
-
-  const coverImage = await uploadToCloudinary(coverImageLocalPath);
-  if (!coverImage) {
-    throw new ApiError(400, "File is not uploaded to cloudinary");
-  }
-
-  req.user.coverImage = coverImage.url;
-  await req.user.save({ validateBeforeSave: true });
-  return res
-    .status(200)
-    .json(new ApiResponse(200, {}, "coverImage uploaded Successfully"));
-});
 const login = asyncHandler(async (req, res) => {
   const { identifier, password } = req.body;
   if (!identifier || !password) {
@@ -266,11 +230,11 @@ const updateDetails = asyncHandler(async (req, res) => {
 
   if (avatarLocalPath) {
     const avatar = await uploadToCloudinary(avatarLocalPath);
-    updatedObject.avatar = avatar.url;
+    updatedObject.avatar = avatar.secure_url;
   }
   if (coverImageLocalPath) {
     const coverImage = await uploadToCloudinary(coverImageLocalPath);
-    updatedObject.coverImage = coverImage.url;
+    updatedObject.coverImage = coverImage.secure_url;
   }
 
   const user = await User.findByIdAndUpdate(
@@ -551,8 +515,6 @@ export {
   registerUser,
   login,
   refreshAccessToken,
-  uploadAvatar,
-  uploadCoverImage,
   logout,
   currentUser,
   updateDetails,

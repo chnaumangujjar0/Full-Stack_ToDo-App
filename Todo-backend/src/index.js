@@ -1,11 +1,12 @@
 import dns from "node:dns";
-dns.setServers(["8.8.8.8", "8.8.4.4"]);
 dns.setDefaultResultOrder('ipv4first');
-import { app } from "./app.js";
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+
 import dotenv from "dotenv"
 dotenv.config()
 
 import {connectDb} from "./db/db.js"
+import { app } from "./app.js";
 
 connectDb()
     .then(() => {

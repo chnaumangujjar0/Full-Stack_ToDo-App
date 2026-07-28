@@ -68,7 +68,7 @@ const StatusDropdown = ({
       </button>
 
       {open && (
-        <div className={`absolute right-0 top-full mt-2 w-40 rounded-sm border border-stone-200 bg-white shadow-lg z-50 ${menuClass}dark:bg-gray-700 dark:border-gray-800 dark:text-white`}>
+        <div className={`absolute  left-0 top-full mt-2 w-40 rounded-sm border border-stone-200 bg-white shadow-lg z-50 ${menuClass}dark:bg-gray-700 dark:border-gray-800 dark:text-white`}>
           {STATUS_OPTIONS.map((option) => (
             <button
               key={option.value}

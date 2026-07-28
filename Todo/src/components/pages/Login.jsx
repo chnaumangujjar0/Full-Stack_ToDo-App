@@ -49,7 +49,7 @@ export default function Login() {
   return (
     <>
       <ToastContainer position="top-right" />
-      <div className="min-h-screen bg-[#F4F5F7] flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans text-gray-800">
+      <div className="min-h-screen bg-[#F4F5F7] flex flex-col justify-center align-middle py-12 px-2 sm:px-6 lg:px-8 font-sans text-gray-800">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <h2 className="mt-6 text-center text-3xl font-semibold text-gray-900">
             Welcome Back

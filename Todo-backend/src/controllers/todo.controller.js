@@ -146,9 +146,6 @@ const deleteTask = asyncHandler(async (req, res) => {
   if (!existingTask) {
     throw new ApiError(400, "task is already deleted");
   }
-  if(existingTask.owner != req.user._id){
-    throw new ApiError(401,"You are unAuthroze to delete this task")
-  }
   await Todo.deleteOne({ _id: existingTask._id });
 
   return res

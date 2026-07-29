@@ -96,7 +96,7 @@ export const updateDetails = async (formData) => {
 }
 
 export const requestPasswordReset = async() => {
-  const res = await api.post('/user/request-reset-password')
+  const res = await api.post('user/request-reset-password')
 }
 
 export const verifyPasswordReset = async (newPassword,otp) => {

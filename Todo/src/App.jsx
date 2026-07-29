@@ -13,6 +13,7 @@ import Profile from './components/pages/Profile'
 import ForgotPassword from './components/pages/ForgotPassword'
 import Loader from './components/common/Loader'
 import { useTheme } from './context/ThemeContext'
+import { Analytics } from '@vercel/analytics/react'
 function App() {
   const {loading} = useAuth()
   const {themeMode} = useTheme()
@@ -35,6 +36,7 @@ function App() {
             </Route>
           </Route>
         </Routes>
+      <Analytics />
     </>
   )
 }

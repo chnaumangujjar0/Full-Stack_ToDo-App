@@ -4,13 +4,14 @@ import api from "./axiosInstance.js"
 import { useAuth } from "../context/AuthContext.jsx";
 // todo apis
 
- export const postTask = async (title,description,status = "pending") => {
+ export const postTask = async (title,description,status = "pending",deadline) => {
     await api.post(
         `todo/addTask`,
         {
           title: title.trim(),
           description: description.trim(),
           status,
+          deadline
         },
       );
 }
@@ -120,5 +121,19 @@ export const verifyForgotPasswordOtp = async (otp,email) => {
 
 export const changeForgotPasword = async (newPassword,email) => {
   const res = await api.patch("user/change-forgot-password",{newPassword: newPassword.trim(),email: email.trim()})
+  return res.data
+}
+// notification apis
+
+export const getAllNotifications = async () => {
+  const res = await api.get("notification/")
+  return res.data.data
+}
+
+export const readNotification = async (notificationId) => {
+  const res = await api.patch(`notification/${notificationId}/read`, {
+    notificationId
+  })
+
   return res.data
 }

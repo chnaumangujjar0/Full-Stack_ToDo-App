@@ -15,6 +15,7 @@ import StatusDropdown from "../common/StatusDropdown.jsx";
 import { toast, ToastContainer } from "react-toastify";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { DatePicker } from "../common/DatePicker.jsx";
 
 const Home = () => {
   const [task, setTask] = useState([]);
@@ -32,6 +33,7 @@ const Home = () => {
   const [prevButton, setPrevButton] = useState(false);
   const [dateFilter, setDateFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("none")
+  const [deadline,setDeadline] = useState(Date.now())
   useEffect(() => {
     getAllTasks(page, limit,dateFilter,statusFilter).then((res) => setTask(res));
   }, [page, limit, dateFilter,statusFilter]);
@@ -57,7 +59,7 @@ const Home = () => {
     onSubmit: async (values, { resetForm }) => {
       setIsLoading(true);
       try {
-        await postTask(values.title, values.description, taskStatus);
+        await postTask(values.title, values.description, taskStatus,deadline);
         resetForm();
         setTaskStatus("pending");
         getAllTasks(page, limit, dateFilter, statusFilter).then((res) => setTask(res));
@@ -270,7 +272,8 @@ const Home = () => {
               onSelect={setTaskStatus}
               buttonClass="w-full justify-between "
             />
-          </div>
+            </div>
+            <DatePicker date={deadline} setDate={setDeadline}/>
           </div>
         </form>
 
@@ -377,8 +380,12 @@ const Home = () => {
                       >
                         {obj.status == "pending" ? "Pending" : obj.status == "in-progress" ? "in-progress" : "Completed"}
                       </span>
+                      
                     </div>
                   </div>
+                  <span>
+                        Deadline : {new Date(obj?.deadline).toLocaleDateString()}
+                  </span>
                   <StatusDropdown
                     selectedStatus={obj.status}
                     onSelect={(status) => updateTaskStatus(obj._id, status)}

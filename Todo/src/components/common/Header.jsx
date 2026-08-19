@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 import { logoutUser } from "../../Api/api";
 import { ToastContainer, toast } from "react-toastify";
+import NotificationDropdown from "./NotificationDropdown";
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user,setUser } = useAuth();
@@ -58,7 +59,7 @@ export const Header = () => {
     <>
       <ToastContainer position="top-center" />
       <div
-        className={`h-full shrink-0 flex flex-col justify-between bg-emerald-900 text-stone-200 border-white py-6 sm:py-8 transition-all duration-300 overflow-hidden dark:bg-black dark:border-gray-700 ${
+        className={`h-full shrink-0 flex flex-col justify-between bg-emerald-900 text-stone-200 border-white py-6 sm:py-8 transition-all duration-300  dark:bg-black dark:border-gray-700 ${
           isOpen
             ? "absolute z-40 w-44 sm:w-56 px-4 sm:px-6 sm:relative sm:z-0 "
             : "w-12 sm:w-16 px-3"
@@ -130,7 +131,13 @@ export const Header = () => {
           </ul>
         </div>
 
-        <div className="flex flex-col align-bottom ">
+        <div className="relative flex flex-col align-bottom gap-3 ">
+          <div className="flex justify-start align-middle gap-3" >
+            <NotificationDropdown/>
+            {isOpen && (
+              <p className="self-center truncate">Notifications</p>
+            )}
+          </div>
           <div className="flex justify-start align-middle gap-3">
             <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border border-gray-300">
               {user?.avatar ? (

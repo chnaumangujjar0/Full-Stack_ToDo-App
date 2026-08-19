@@ -16,8 +16,9 @@ app.use(cookieParser())
 // routes import 
 import todoRouter from "./routes/todo.routes.js"
 import userRouter from "./routes/user.routes.js"
-
+import notificationRouter from "./routes/notification.routes.js"
 //routes intialization
 app.use("/api/v1/todo",todoRouter)
 app.use("/api/v1/user",userRouter)
+app.use("/api/v1/notification",notificationRouter)
 export {app}

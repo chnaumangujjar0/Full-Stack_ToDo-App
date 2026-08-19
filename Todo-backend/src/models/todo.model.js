@@ -18,6 +18,13 @@ const todoSchema = new Schema(
         owner: {
             type: mongoose.Types.ObjectId,
             ref: "User"
+        },
+        deadline: {
+            type: Date
+        },
+        reminderSent: {
+            type: Boolean,
+            default: false
         }
     },
     {timestamps: true}

@@ -5,7 +5,7 @@ import { ApiResponse } from "../utils/apiResponse.js";
 import mongoose, { isValidObjectId } from "mongoose";
 
 const addTask = asyncHandler(async (req, res) => {
-  const { title, description, status = "pending" } = req.body;
+  const { title, description, status = "pending",deadline } = req.body;
   const validStatuses = ["pending", "in-progress", "completed"];
 
   if (!(title || description)) {
@@ -20,7 +20,8 @@ const addTask = asyncHandler(async (req, res) => {
     title: title.trim(),
     description: description.trim(),
     status,
-    owner: req.user._id
+    owner: req.user._id,
+    deadline 
   });
 
   if (!todo) {

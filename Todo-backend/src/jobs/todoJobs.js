@@ -49,4 +49,25 @@ export const startCronJobs = () => {
       console.error("Error in deadline cron job:", error);
     }
   });
+  cron.schedule("0 0 * * *", async () => {
+    console.log("Running scheduled task: Cleaning up old notifications");
+
+    try {
+      // Calculate the exact date 30 days ago
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      // Delete all notifications created before that date
+      const result = await Notification.deleteMany({
+        createdAt: { $lte: thirtyDaysAgo }
+      });
+
+      if (result.deletedCount > 0) {
+        console.log(`Database Cleanup: Deleted ${result.deletedCount} notifications older than 30 days.`);
+      }
+
+    } catch (error) {
+      console.error("Error in notification cleanup cron job:", error);
+    }
+  });
 };

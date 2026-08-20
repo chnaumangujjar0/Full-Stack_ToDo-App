@@ -5,8 +5,8 @@ import { User } from "../models/user.model.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
-
-
+import { UAParser } from "ua-parser-js";
+import {LoginActivity} from "../models/loginActivity.model.js"
 const generateAccessAndRefreshToken = async (id) => {
   try {
     console.log(id);
@@ -87,6 +87,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const login = asyncHandler(async (req, res) => {
   const { identifier, password } = req.body;
+  
   if (!identifier || !password) {
     throw new ApiError(400, "username or password is required");
   }
@@ -117,7 +118,20 @@ const login = asyncHandler(async (req, res) => {
   const loggedInUser = await User.findById(existedUser._id).select(
     "-password -refreshToken",
   );
+  const parser = new UAParser(req.headers["user-agent"]);
+  const result = parser.getResult();
+  const readableDevice = `${result.browser.name} on ${result.os.name}`;
 
+  
+  const clientIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+
+  // 3. Save the log to the database
+  await LoginActivity.create({
+    user: loggedInUser._id, // The user who just successfully logged in
+    ipAddress: clientIp,
+    deviceInfo: readableDevice,
+    status: "success",
+  });
   const options = {
     httpOnly: true,
     secure: true,

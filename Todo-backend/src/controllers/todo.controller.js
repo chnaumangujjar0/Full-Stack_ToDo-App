@@ -91,7 +91,7 @@ const getAllTasks = asyncHandler(async (req, res) => {
   const tasks = await Todo.find(query)
     .sort({ createdAt: -1 })
     .skip(pageNum)
-    .limit(limit)
+    .limit(limitNum)
   
   if (!tasks) {
     throw new ApiError(400, "Task fetching failed");
@@ -104,7 +104,7 @@ const getAllTasks = asyncHandler(async (req, res) => {
 
 const updateTask = asyncHandler(async (req, res) => {
   const { taskId } = req.params;
-  const { title, description } = req.body;
+  const { title, description,deadline } = req.body;
 
   if (!isValidObjectId(taskId)) {
     throw new ApiError(400, "invalid object id");
@@ -125,6 +125,7 @@ const updateTask = asyncHandler(async (req, res) => {
       $set: {
         title: title.trim(),
         description: description.trim(),
+        deadline
       },
     },
     { returnDocument: "after" },

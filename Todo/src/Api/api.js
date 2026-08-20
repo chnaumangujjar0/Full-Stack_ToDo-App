@@ -21,10 +21,11 @@ export const getSingleTaskData = async (id) => {
     return taskData.data.data
 }
 
-export const updateTaskDetails = async (id,title,description) => {
+export const updateTaskDetails = async (id,title,description,deadline) => {
     api.patch(`todo/${id}`, {
         title: title.trim(),
-        description: description.trim()
+        description: description.trim(),
+        deadline
       })
 }
 
@@ -136,4 +137,12 @@ export const readNotification = async (notificationId) => {
   })
 
   return res.data
+}
+
+// login activity api
+
+export const getLoginActivity = async (page,limit) => {
+  const res = await api.get(`activity/login-history?page=${page}&limit=10`)
+
+  return res.data.data
 }

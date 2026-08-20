@@ -61,7 +61,7 @@ export const Header = () => {
       <div
         className={`h-full shrink-0 flex flex-col justify-between bg-emerald-900 text-stone-200 border-white py-6 sm:py-8 transition-all duration-300  dark:bg-black dark:border-gray-700 ${
           isOpen
-            ? "absolute z-40 w-44 sm:w-56 px-4 sm:px-6 sm:relative sm:z-0 "
+            ? "absolute z-20 w-44 sm:w-56 px-4 sm:px-6 sm:relative sm:z-0 "
             : "w-12 sm:w-16 px-3"
         }`}
       >
@@ -128,40 +128,48 @@ export const Header = () => {
                 </Link>
               )}
             </li>
+            <li>
+              {isOpen && (
+                <Link
+                  to="/login-activity"
+                  className={`block px-3 py-2 rounded-sm hover:bg-stone-800 hover:text-white transition-colors cursor-pointer whitespace-nowrap ${!isOpen && "text-center px-0"}`}
+                >
+                  Activity
+                </Link>
+              )}
+            </li>
           </ul>
         </div>
 
         <div className="relative flex flex-col align-bottom gap-3 ">
-          <div className="flex justify-start align-middle gap-3" >
+          <div className="flex justify-start items-center gap-3 hover:bg-stone-800 p-2 rounded-sm" >
             <NotificationDropdown/>
             {isOpen && (
               <p className="self-center truncate">Notifications</p>
             )}
           </div>
-          <div className="flex justify-start align-middle gap-3">
-            <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border border-gray-300">
+          <Link to='/profile'>
+          <div className="flex justify-start align-middle gap-3 hover:bg-stone-800 p-2 rounded-sm">
+            <div className="w-6 h-6 rounded-full bg-gray-200 overflow-hidden border border-gray-300">
               {user?.avatar ? (
-                <Link to='/profile'>
                   <img
                     src={user.avatar}
                     alt="User avatar"
                     className="w-20 h-full  sm:h-full object-cover"
-                  />
-                </Link>
-              ) : (
-                <Link to='/profile'>
+                  />   
+              ) : (   
                   <img
                     src="https://images.unsplash.com/photo-1740252117044-2af197eea287?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                     alt="User avatar"
                     className="w-full h-full object-cover mt-1"
                   />
-                </Link>
               )}
             </div>
             {isOpen && (
-              <p className="self-center truncate">{user?.fullName.toUpperCase()}</p>
+              <p className="self-center truncate">{user?.fullName.toUpperCase() ?? "USER"}</p>
             )}
           </div>
+          </Link>
           {isOpen && (
             <div
               className="flex justify-between mt-2  text-red-600  hover:bg-stone-800 rounded-sm "

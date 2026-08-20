@@ -13,6 +13,7 @@ import Profile from './components/pages/Profile'
 import ForgotPassword from './components/pages/ForgotPassword'
 import Loader from './components/common/Loader'
 import { useTheme } from './context/ThemeContext'
+import LoginActivity from './components/pages/LoginActivity'
 function App() {
   const {loading} = useAuth()
   const {themeMode} = useTheme()
@@ -32,6 +33,7 @@ function App() {
               <Route path='/:id' element={<Detail/>} />
               <Route path='/history' element={<History/>}/> 
               <Route path='/profile' element={<Profile/>}/>
+              <Route path='/login-activity' element={<LoginActivity/>}/>
             </Route>
           </Route>
         </Routes>

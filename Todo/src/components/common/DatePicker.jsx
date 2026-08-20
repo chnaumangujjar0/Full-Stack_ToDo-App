@@ -15,7 +15,7 @@ export function DatePicker({ date, setDate }) {
   
 
   return (
-    <Field className="mx-auto w-44 gap-0 m-0">
+    <Field className="mx-auto w-44 gap-0 m-0 ">
       <FieldLabel htmlFor="date-picker-simple" className={"text-stone-400 font-mono px-1 py-0 tracking-[0.2em]"}>Deadline</FieldLabel>
       <Popover className={"p-0"}>
         <PopoverTrigger render={<Button variant="outline" id="date-picker-simple" className="py-0 justify-start font-normal rounded-sm font-mono">{date ? format(date, "PPP") : <span>Pick a date</span>}</Button>} />
@@ -25,6 +25,7 @@ export function DatePicker({ date, setDate }) {
             selected={date}
             onSelect={setDate}
             defaultMonth={date}
+            
           />
         </PopoverContent>
       </Popover>

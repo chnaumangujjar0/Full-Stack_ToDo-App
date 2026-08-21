@@ -25,6 +25,10 @@ const todoSchema = new Schema(
         reminderSent: {
             type: Boolean,
             default: false
+        },
+        workspace: {
+            type: String,
+            default: "none"
         }
     },
     {timestamps: true}

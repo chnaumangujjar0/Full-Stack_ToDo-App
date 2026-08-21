@@ -34,8 +34,9 @@ const addTask = asyncHandler(async (req, res) => {
 });
 
 const getAllTasks = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 5, filter = "all", status = "all" } = req.query;
+  const { page = 1, limit = 5, filter = "all", status = "all",workspace ="none" } = req.query;
   let query = {};
+  query.workspace = workspace
   const now = new Date();
   query.owner = req.user._id
   if (filter === "today") {
@@ -230,7 +231,7 @@ const countData = asyncHandler(async (req, res) => {
             $cond: [{ $eq: ["$status", "pending"] }, 1, 0],
           },
         },
-        inProgess: {
+        inProgress: {
           $sum: {
             $cond: [{ $eq: ["$status", "in-progress"] }, 1, 0],
           },
@@ -243,7 +244,7 @@ const countData = asyncHandler(async (req, res) => {
         totalTasks: 1,
         completed: 1,
         pending: 1,
-        inProgess: 1
+        inProgress: 1
       },
     },
   ]);

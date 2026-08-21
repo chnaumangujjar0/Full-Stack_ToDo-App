@@ -18,9 +18,11 @@ import todoRouter from "./routes/todo.routes.js"
 import userRouter from "./routes/user.routes.js"
 import notificationRouter from "./routes/notification.routes.js"
 import loginActivityRouter from "./routes/loginActivity.routes.js"
+import workspaceRouter from "./routes/workspace.routes.js"
 //routes intialization
 app.use("/api/v1/todo",todoRouter)
 app.use("/api/v1/user",userRouter)
 app.use("/api/v1/notification",notificationRouter)
 app.use("/api/v1/activity",loginActivityRouter)
+app.use("/api/v1/workspace",workspaceRouter)
 export {app}

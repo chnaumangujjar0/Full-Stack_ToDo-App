@@ -14,6 +14,10 @@ const notificationSchema = new Schema(
     isRead: {
       type: Boolean,
       default: false,
+    },
+    type: {
+      type: String,
+      default: "reminder"
     }
   },
   { timestamps: true }

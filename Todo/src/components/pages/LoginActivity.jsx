@@ -34,7 +34,7 @@ export default function LoginActivity() {
   };
 
   return (
-    <div className="w-full max-w-4xl mt-20 mx-auto p-4 md:p-6 bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col">
+    <div className="w-full  max-w-4xl mt-20 mx-auto p-4 md:p-6 bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col">
       <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white">
           Login History
@@ -50,20 +50,20 @@ export default function LoginActivity() {
             <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto w-full">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-800">
-                  <th className="pb-3 text-sm font-semibold text-gray-600 dark:text-gray-400">
+                  <th className="pb-3 px-2 text-sm font-semibold text-gray-600 dark:text-gray-400">
                     Date & Time
                   </th>
-                  <th className="pb-3 text-sm font-semibold text-gray-600 dark:text-gray-400">
+                  <th className="pb-3 px-2 text-sm font-semibold text-gray-600 dark:text-gray-400">
                     Device
                   </th>
-                  <th className="pb-3 text-sm font-semibold text-gray-600 dark:text-gray-400">
+                  <th className="pb-3 px-2 text-sm font-semibold text-gray-600 dark:text-gray-400">
                     IP Address
                   </th>
-                  <th className="pb-3 text-sm font-semibold text-gray-600 dark:text-gray-400">
+                  <th className="pb-3  xext-sm font-semibold text-gray-600 dark:text-gray-400">
                     Status
                   </th>
                 </tr>
@@ -84,16 +84,16 @@ export default function LoginActivity() {
                       key={session._id}
                       className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                     >
-                      <td className="py-4 text-sm text-gray-900 dark:text-gray-200 whitespace-nowrap">
+                      <td className="py-4 px-2 text-sm text-gray-900 dark:text-gray-200 whitespace-nowrap">
                         {formatDate(session.createdAt)}
                       </td>
-                      <td className="py-4 text-sm text-gray-700 dark:text-gray-300">
+                      <td className="py-4 px-2 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
                         {session.deviceInfo}
                       </td>
-                      <td className="py-4 text-sm font-mono text-gray-500 dark:text-gray-400">
+                      <td className="py-4 px-2 text-sm font-mono text-gray-500 dark:text-gray-400 whitespace-wrap">
                         {session.ipAddress}
                       </td>
-                      <td className="py-4">
+                      <td className="py-4 px-2">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             session.status === "success"

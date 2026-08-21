@@ -1,39 +1,23 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   deleteTaskById,
   getAllTasks,
   getSingleTaskData,
-  postTask,
   totalData,
   updateStatus,
   updateTaskDetails,
 } from "../../Api/api.js";
-import { Link } from "react-router";
 import Loader from "../common/Loader.jsx";
-import StatusDropdown from "../common/StatusDropdown.jsx";
 import { toast, ToastContainer } from "react-toastify";
-import { useFormik } from "formik";
-import * as Yup from "yup";
-import { DatePicker } from "../common/DatePicker.jsx";
 
-const LIMIT = 5;
-
-const STATUS_STYLES = {
-  pending: "bg-amber-600 text-amber-50",
-  "in-progress": "bg-sky-700 text-sky-50",
-  completed: "bg-emerald-800 text-emerald-50",
-};
-
-const STATUS_LABELS = {
-  pending: "Pending",
-  "in-progress": "In-progress",
-  completed: "Completed",
-};
-
-const validationSchema = Yup.object({
-  title: Yup.string().trim().required("Title is required"),
-  description: Yup.string().trim().required("Description is required"),
-});
+import { LIMIT } from "../common/constants.js";
+import TaskForm from "../common/TaskForm.jsx";
+import StatsPanel from "../common/StatsPanel.jsx";
+import TaskFilters from "../common/TaskFilters.jsx";
+import TaskList from "../common/TaskList.jsx";
+import Pagination from "../common/Pagination.jsx";
+import EditTaskToast from "../common/EditTaskToast.jsx";
+import DeleteConfirmToast from "../common/DeleteConfirmToast.jsx";
 
 const Home = () => {
   const [tasks, setTasks] = useState([]);
@@ -53,8 +37,6 @@ const Home = () => {
 
   const [dateFilter, setDateFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-
-  const titleInputRef = useRef(null);
 
   const totalPages = Math.max(1, Math.ceil(stats.total / LIMIT));
 
@@ -78,6 +60,7 @@ const Home = () => {
       const res = await totalData();
       const summary = res?.[0];
       if (!summary) return;
+      console.log(summary)
       setStats({
         total: summary.totalTasks || 0,
         completed: summary.completed || 0,
@@ -98,28 +81,7 @@ const Home = () => {
     fetchStats();
   }, [fetchStats]);
 
-  // ---- Add task form ---------------------------------------------------
-
-  const formik = useFormik({
-    initialValues: { title: "", description: "" },
-    validationSchema,
-    enableReinitialize: true,
-    onSubmit: async (values, { resetForm }) => {
-      setIsLoading(true);
-      try {
-        await postTask(values.title.trim(), values.description.trim(), taskStatus, deadline);
-        resetForm();
-        setTaskStatus("pending");
-        setDeadline(new Date());
-        await Promise.all([fetchTasks(), fetchStats()]);
-        titleInputRef.current?.focus();
-      } catch (error) {
-        toast.error("Couldn't save task, try again.");
-      } finally {
-        setIsLoading(false);
-      }
-    },
-  });
+  const refreshAll = () => Promise.all([fetchTasks(), fetchStats()]);
 
   // ---- Edit task ---------------------------------------------------------
 
@@ -168,7 +130,7 @@ const Home = () => {
     setIsLoading(true);
     try {
       await deleteTaskById(id);
-      await Promise.all([fetchTasks(), fetchStats()]);
+      await refreshAll();
     } catch (err) {
       toast.error("Couldn't delete task, try again.");
     } finally {
@@ -180,35 +142,13 @@ const Home = () => {
     setIsToastOpen(true);
     toast(
       ({ closeToast }) => (
-        <div className="flex flex-col gap-3 sm:gap-4 m-3 sm:m-4 w-56 sm:w-72 bg-[#FFFDF8] rounded-sm p-4 sm:p-5">
-          <p className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono">
-            Confirm delete
-          </p>
-          <p className="font-serif text-lg sm:text-xl text-stone-900 leading-snug">
-            Delete this task?
-          </p>
-          <div className="flex gap-2 justify-end mt-1">
-            <button
-              onClick={() => {
-                closeToast();
-                setIsToastOpen(false);
-              }}
-              className="px-4 py-1.5 rounded-sm border border-stone-300 text-stone-600 text-sm hover:border-stone-500 transition-colors"
-            >
-              No
-            </button>
-            <button
-              onClick={() => {
-                closeToast();
-                setIsToastOpen(false);
-                deleteTask(id);
-              }}
-              className="px-4 py-1.5 rounded-sm bg-red-700 text-white text-sm hover:bg-red-800 transition-colors"
-            >
-              Yes
-            </button>
-          </div>
-        </div>
+        <DeleteConfirmToast
+          closeToast={() => {
+            closeToast();
+            setIsToastOpen(false);
+          }}
+          onConfirm={() => deleteTask(id)}
+        />
       ),
       { autoClose: false, closeOnClick: false, closeButton: false },
     );
@@ -220,7 +160,7 @@ const Home = () => {
     setUpdatingId(id);
     try {
       await updateStatus(id, status);
-      await Promise.all([fetchTasks(), fetchStats()]);
+      await refreshAll();
     } catch (error) {
       toast.error("Couldn't update task status, try again.");
     } finally {
@@ -252,296 +192,41 @@ const Home = () => {
       )}
 
       <div className="max-w-7xl mx-auto bg-stone-100 px-3 sm:px-5 pt-6 sm:pt-10 pb-6 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 items-start dark:bg-gray-800 dark:border-gray-700 dark:text-white">
-        <form
-          onSubmit={formik.handleSubmit}
-          className="p-4 sm:p-6 flex flex-col gap-3 sm:gap-4 w-full bg-[#FFFDF8] rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-stone-200 dark:bg-gray-900 dark:border-gray-800 dark:text-white"
-        >
-          <p className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono -mb-1">
-            New Task
-          </p>
-
-          <div>
-            <input
-              className="h-12 sm:h-14 text-base sm:text-lg bg-transparent outline-0 text-stone-900 placeholder:text-stone-400 px-3 border border-stone-300 focus:border-stone-500 rounded-sm w-full transition-colors dark:text-white"
-              ref={titleInputRef}
-              type="text"
-              name="title"
-              placeholder="Enter title"
-              value={formik.values.title}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-            />
-            {formik.touched.title && formik.errors.title && (
-              <p className="text-red-600 text-xs mt-1">{formik.errors.title}</p>
-            )}
-          </div>
-
-          <div>
-            <textarea
-              className="min-h-24 sm:min-h-28 text-base sm:text-lg bg-transparent outline-0 text-stone-900 placeholder:text-stone-400 px-3 py-3 border border-stone-300 focus:border-stone-500 rounded-sm w-full transition-colors resize-none dark:text-white"
-              name="description"
-              placeholder="Enter description"
-              value={formik.values.description}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-            />
-            {formik.touched.description && formik.errors.description && (
-              <p className="text-red-600 text-xs mt-1">{formik.errors.description}</p>
-            )}
-          </div>
-
-          <div className="flex flex-wrap justify-start gap-3 pt-1">
-            <button
-              type="submit"
-              disabled={formik.isSubmitting}
-              className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-sm text-emerald-50 bg-emerald-800 hover:bg-emerald-900 cursor-pointer transition-colors text-sm tracking-wide disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              Add task
-            </button>
-            <div className="flex flex-col gap-1">
-              <label className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono">
-                Task Status
-              </label>
-              <StatusDropdown
-                selectedStatus={taskStatus}
-                onSelect={setTaskStatus}
-                buttonClass="w-full justify-between"
-              />
-            </div>
-            <DatePicker date={deadline} setDate={setDeadline} />
-          </div>
-        </form>
-
-        <div className="p-4 sm:p-6 lg:p-8 bg-[#FFFDF8] rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-stone-200 w-full h-full flex items-center justify-center dark:bg-gray-900 dark:border-gray-800">
-          <div className="grid grid-cols-4 gap-2 w-full">
-            <StatCard label="Total" value={stats.total} colorClass="border-indigo-900 text-indigo-900" />
-            <StatCard label="Completed" value={stats.completed} colorClass="border-emerald-800 text-emerald-800" />
-            <StatCard label="Pending" value={stats.pending} colorClass="border-amber-800 text-amber-800" />
-            <StatCard label="InProgress" value={stats.inProgress} colorClass="border-amber-800 text-amber-800" />
-          </div>
-        </div>
+        <TaskForm
+          taskStatus={taskStatus}
+          setTaskStatus={setTaskStatus}
+          deadline={deadline}
+          setDeadline={setDeadline}
+          setIsLoading={setIsLoading}
+          onTaskAdded={refreshAll}
+        />
+        <StatsPanel stats={stats} />
       </div>
 
-      <div className="max-w-7xl mx-auto px-3 py-2 sm:px-5 flex flex-col justify-between align-middle md:flex-row">
-        <h1 className="p-2 text-2xl sm:text-3xl md:text-4xl">Tasks</h1>
-        <div className="flex gap-3 justify-end">
-          <div className="flex flex-col">
-            <label className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono">
-              Filter by Status
-            </label>
-            <select
-              value={statusFilter}
-              onChange={handleStatusFilterChange}
-              className="h-8 px-1 sm:px-2 md:px-3 border border-stone-300 rounded-sm text-stone-900 bg-[#FFFDF8] focus:border-stone-500 transition-colors text-sm cursor-pointer dark:bg-gray-900 dark:border-gray-800 dark:text-white"
-            >
-              <option value="all">All</option>
-              <option value="pending">Pending</option>
-              <option value="in-progress">In-progress</option>
-              <option value="completed">Completed</option>
-            </select>
-          </div>
-          <div className="flex flex-col">
-            <label className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono">
-              Filter by date
-            </label>
-            <select
-              value={dateFilter}
-              onChange={handleDateFilterChange}
-              className="h-8 px-1 sm:px-2 md:px-3 border border-stone-300 rounded-sm text-stone-900 bg-[#FFFDF8] focus:border-stone-500 transition-colors text-sm cursor-pointer dark:bg-gray-900 dark:border-gray-800 dark:text-white"
-            >
-              <option value="all">All</option>
-              <option value="today">Today</option>
-              <option value="yesterday">Yesterday</option>
-              <option value="week">This week</option>
-              <option value="month">This month</option>
-            </select>
-          </div>
-        </div>
-      </div>
+      <TaskFilters
+        statusFilter={statusFilter}
+        onStatusFilterChange={handleStatusFilterChange}
+        dateFilter={dateFilter}
+        onDateFilterChange={handleDateFilterChange}
+      />
 
-      <div className="max-w-7xl mx-auto bg-stone-100 mt-0 flex justify-start px-3 sm:px-5 dark:bg-gray-800 dark:border-gray-800">
-        <ul className="pb-10 flex flex-col gap-3 sm:gap-4 w-full mx-auto bg-stone-100 dark:bg-gray-800 dark:border-gray-800">
-          {!isLoading && tasks.length === 0 ? (
-            <div className="bg-white rounded-sm shadow-sm border border-stone-200 p-10 text-center text-stone-500 text-sm">
-              No tasks found.
-            </div>
-          ) : (
-            tasks.map((task) => (
-              <li
-                key={task._id}
-                className="relative w-full flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 bg-[#FFFDF8] rounded-sm px-3 sm:px-6 lg:px-8 py-4 sm:py-5 border border-stone-200 shadow-[0_1px_3px_rgba(0,0,0,0.06)] dark:bg-gray-900 dark:border-gray-700 dark:text-white"
-              >
-                <div className="flex-1 min-w-0 basis-full sm:basis-auto order-3 sm:order-0">
-                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                    <Link to={`/${task._id}`} className="min-w-0">
-                      <span className="font-serif text-base sm:text-lg text-stone-900 truncate block dark:text-white">
-                        {task.title}
-                      </span>
-                    </Link>
-                    <span
-                      className={`text-[10px] tracking-[0.15em] uppercase px-2 py-0.5 rounded-sm shrink-0 ${
-                        STATUS_STYLES[task.status] || STATUS_STYLES.pending
-                      }`}
-                    >
-                      {STATUS_LABELS[task.status] || task.status}
-                    </span>
-                  </div>
-                </div>
+      <TaskList
+        tasks={tasks}
+        isLoading={isLoading}
+        updatingId={updatingId}
+        onStatusChange={updateTaskStatus}
+        onEdit={openEditToast}
+        onDelete={confirmDelete}
+      />
 
-                <span className="text-sm text-stone-500 shrink-0">
-                  Deadline: {task.deadline ? new Date(task.deadline).toLocaleDateString() : "—"}
-                </span>
-
-                <StatusDropdown
-                  selectedStatus={task.status}
-                  onSelect={(status) => updateTaskStatus(task._id, status)}
-                  disabled={updatingId === task._id}
-                  buttonClass="h-8 px-3"
-                />
-
-                <div className="flex items-center gap-2 ml-auto sm:ml-0 z-40">
-                  <button
-                    type="button"
-                    aria-label="Edit task"
-                    className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-stone-300 text-stone-500 hover:text-stone-800 hover:border-stone-500 flex items-center justify-center transition-colors dark:bg-gray-700 dark:border-gray-800 dark:text-white"
-                    onClick={() => openEditToast(task._id)}
-                  >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Delete task"
-                    className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-stone-300 text-stone-500 hover:text-red-600 hover:border-red-300 flex items-center justify-center transition-colors dark:bg-gray-700 dark:border-gray-800 dark:text-white"
-                    onClick={() => confirmDelete(task._id)}
-                  >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                  </button>
-                </div>
-              </li>
-            ))
-          )}
-        </ul>
-      </div>
-
-      <div className="py-5 flex items-center justify-center w-full gap-3 text-white font-mono font-light">
-        <button
-          type="button"
-          className="bg-emerald-900 text-sm px-3 py-1.5 rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
-          onClick={goToPrevPage}
-          disabled={page <= 1}
-        >
-          Prev
-        </button>
-        <span className="text-stone-700 text-sm">
-          Page {page} of {totalPages}
-        </span>
-        <button
-          type="button"
-          className="bg-emerald-900 text-sm px-3 py-1.5 rounded-md disabled:opacity-40 disabled:cursor-not-allowed"
-          onClick={goToNextPage}
-          disabled={page >= totalPages}
-        >
-          Next
-        </button>
-      </div>
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPrev={goToPrevPage}
+        onNext={goToNextPage}
+      />
     </>
   );
 };
 
 export default Home;
-
-// ---------------------------------------------------------------------------
-// Small presentational helper for the stats grid
-// ---------------------------------------------------------------------------
-const StatCard = ({ label, value, colorClass }) => (
-  <div
-    className={`aspect-square border-2 rounded-2xl bg-gray-200 shadow-2xl sm:p-4 lg:p-6 flex flex-col justify-center items-center text-center dark:bg-gray-900 ${colorClass}`}
-  >
-    <p className="mb-0.5 sm:mb-2 text-[10px] sm:text-sm lg:text-base leading-tight">{label}</p>
-    <strong className="text-base sm:text-2xl lg:text-3xl">{value}</strong>
-  </div>
-);
-
-// ---------------------------------------------------------------------------
-// Edit task toast content
-// ---------------------------------------------------------------------------
-const EditTaskToast = ({
-  taskId,
-  initialTitle,
-  initialDescription,
-  initialDeadline,
-  onSave,
-  onCancel,
-}) => {
-  const [title, setTitle] = useState(initialTitle);
-  const [description, setDescription] = useState(initialDescription);
-  const [deadline, setDeadline] = useState(initialDeadline || new Date());
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleUpdate = async () => {
-    if (!title.trim() || !description.trim()) {
-      setError("Both fields are required");
-      return;
-    }
-    if (!deadline) {
-      setError("Deadline is required");
-      return;
-    }
-    setError("");
-    setSaving(true);
-    try {
-      await onSave(taskId, title.trim(), description.trim(), deadline);
-    } catch (err) {
-      setError("Couldn't update task, try again.");
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className=" flex flex-col gap-3 m-4 w-64 sm:w-72 ">
-      <p className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono">Edit task</p>
-      <div>
-        <DatePicker date={deadline} setDate={setDeadline}/>
-      </div>
-      <input
-        className="h-11 px-3 border border-stone-300 rounded-sm text-stone-900 bg-white focus:border-stone-500 transition-colors text-sm"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Title"
-      />
-      <textarea
-        className="min-h-24 sm:min-h-28 border p-3 border-stone-300 rounded-sm text-stone-900 bg-white focus:border-stone-500 transition-colors text-sm resize-none"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder="Description"
-      />
-      
-      {error && <p className="text-red-600 text-xs">{error}</p>}
-      <div className="flex gap-2 justify-end mt-1">
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={saving}
-          className="px-4 py-1.5 rounded-sm border border-stone-300 text-stone-600 text-sm hover:border-stone-500 transition-colors disabled:opacity-60"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          disabled={saving}
-          onClick={handleUpdate}
-          className="px-4 py-1.5 rounded-sm bg-emerald-800 text-white text-sm hover:bg-emerald-900 transition-colors disabled:opacity-60"
-        >
-          {saving ? "Saving..." : "Update"}
-        </button>
-      </div>
-    </div>
-  );
-};

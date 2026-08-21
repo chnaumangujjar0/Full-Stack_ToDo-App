@@ -14,6 +14,8 @@ import ForgotPassword from './components/pages/ForgotPassword'
 import Loader from './components/common/Loader'
 import { useTheme } from './context/ThemeContext'
 import LoginActivity from './components/pages/LoginActivity'
+import WorkspaceHub from './components/pages/WorkspaceHub'
+import WorkspaceDetails from './components/pages/WorkspaceDetails'
 function App() {
   const {loading} = useAuth()
   const {themeMode} = useTheme()
@@ -34,6 +36,8 @@ function App() {
               <Route path='/history' element={<History/>}/> 
               <Route path='/profile' element={<Profile/>}/>
               <Route path='/login-activity' element={<LoginActivity/>}/>
+              <Route path='/workspace' element={<WorkspaceHub/>}/>
+              <Route path='/workspace/:workspaceId' element={<WorkspaceDetails/>} />
             </Route>
           </Route>
         </Routes>

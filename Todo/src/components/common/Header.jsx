@@ -142,14 +142,14 @@ export const Header = () => {
         </div>
 
         <div className="relative flex flex-col align-bottom gap-3 ">
-          <div className="flex justify-start items-center gap-3 hover:bg-stone-800 p-2 rounded-sm" >
+          <div className="flex justify-start items-center gap-3 hover:bg-stone-800  md:p-2 rounded-sm" >
             <NotificationDropdown/>
             {isOpen && (
               <p className="self-center truncate">Notifications</p>
             )}
           </div>
           <Link to='/profile'>
-          <div className="flex justify-start align-middle gap-3 hover:bg-stone-800 p-2 rounded-sm">
+          <div className="flex justify-start align-middle gap-3 hover:bg-stone-800 p-0 md:p-2 rounded-sm">
             <div className="w-6 h-6 rounded-full bg-gray-200 overflow-hidden border border-gray-300">
               {user?.avatar ? (
                   <img

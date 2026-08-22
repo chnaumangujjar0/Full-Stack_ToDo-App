@@ -16,6 +16,7 @@ import { useTheme } from './context/ThemeContext'
 import LoginActivity from './components/pages/LoginActivity'
 import WorkspaceHub from './components/pages/WorkspaceHub'
 import WorkspaceDetails from './components/pages/WorkspaceDetails'
+import TaskForm from './components/common/TaskForm'
 function App() {
   const {loading} = useAuth()
   const {themeMode} = useTheme()
@@ -38,6 +39,7 @@ function App() {
               <Route path='/login-activity' element={<LoginActivity/>}/>
               <Route path='/workspace' element={<WorkspaceHub/>}/>
               <Route path='/workspace/:workspaceId' element={<WorkspaceDetails/>} />
+              <Route element={<TaskForm/>}/>
             </Route>
           </Route>
         </Routes>

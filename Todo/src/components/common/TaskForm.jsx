@@ -5,8 +5,8 @@ import { toast } from "react-toastify";
 import { postTask } from "../../Api/api.js";
 import StatusDropdown from "./StatusDropdown.jsx";
 import { DatePicker } from "./DatePicker.jsx";
-// You will need to create this new component, similar to StatusDropdown
 import AssigneeDropdown from "./AssigneeDropdown.jsx"; 
+import { Cross, X } from "lucide-react";
 
 const validationSchema = Yup.object({
   title: Yup.string().trim().required("Title is required"),
@@ -20,14 +20,14 @@ const TaskForm = ({
   setDeadline,
   onTaskAdded,
   setIsLoading,
-  // NEW PROPS FOR COLLABORATION
   workspaceId = null, 
   workspaceMembers = [], 
   assignedTo = null,
   setAssignedTo = () => {},
+  onClose = () => {}, 
 }) => {
   const titleInputRef = useRef(null);
-
+  
   const formik = useFormik({
     initialValues: { title: "", description: "" },
     validationSchema,
@@ -35,21 +35,25 @@ const TaskForm = ({
     onSubmit: async (values, { resetForm }) => {
       setIsLoading(true);
       try {
-        // We now pass the new fields to your API function
         await postTask(
           values.title.trim(), 
           values.description.trim(), 
           taskStatus, 
           deadline,
-          workspaceId, // Will be null if it's a personal task
-          assignedTo   // Will be null if unassigned
+          workspaceId, 
+          assignedTo   
         );
         resetForm();
         setTaskStatus("pending");
         setDeadline(new Date());
-        setAssignedTo(null); // Reset assignment
+        setAssignedTo(null); 
         await onTaskAdded?.();
         titleInputRef.current?.focus();
+        
+        // If it's a modal, close it after successful creation
+        if (workspaceMembers.length > 0) {
+          onClose();
+        }
       } catch (error) {
         toast.error("Couldn't save task, try again.");
       } finally {
@@ -57,16 +61,30 @@ const TaskForm = ({
       }
     },
   });
+  console.log(workspaceId,workspaceMembers)
+  const isWorkspaceContext = workspaceMembers.length > 0;
 
-  // Check if we are inside a workspace with members
-  const isWorkspaceContext = workspaceMembers && workspaceMembers.length > 0;
-
-  return (
+  // 1. Define the form content itself
+  const formContent = (
     <form
       onSubmit={formik.handleSubmit}
-      className="p-4 sm:p-6 flex flex-col gap-3 sm:gap-4 w-full bg-[#FFFDF8] rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-stone-200 dark:bg-gray-900 dark:border-gray-800 dark:text-white"
+      onClick={(e) => isWorkspaceContext && e.stopPropagation()} 
+      className={`p-4 sm:p-6 flex flex-col gap-3 sm:gap-4 bg-[#FFFDF8] rounded-sm shadow-[0_1px_3px_rgba(0,0,0,0.08)] border border-stone-200 dark:bg-gray-900 dark:border-gray-800 dark:text-white relative ${
+        isWorkspaceContext ? "w-full max-w-2xl" : "w-full"
+      }`}
     >
-      <p className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono -mb-1">
+      
+      {isWorkspaceContext && (
+        <button 
+          type="button"
+          onClick={onClose}
+          className="absolute top-4 right-4 p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 rounded-sm transition-colors focus:outline-none"
+        >
+          <X size={20}/>
+        </button>
+      )}
+
+      <p className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono -mb-1 mt-1">
         {isWorkspaceContext ? "New Team Task" : "New Task"}
       </p>
 
@@ -125,7 +143,7 @@ const TaskForm = ({
 
         <DatePicker date={deadline} setDate={setDeadline} />
 
-        {/* NEW: Conditional Assignee Dropdown */}
+        {/* Conditional Assignee Dropdown */}
         {isWorkspaceContext && (
           <div className="flex flex-col gap-1">
             <label className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono">
@@ -141,6 +159,21 @@ const TaskForm = ({
       </div>
     </form>
   );
+
+  // 2. Conditionally render the modal wrapper
+  if (isWorkspaceContext) {
+    return (
+      <div 
+        className="fixed inset-0 z-[5000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity"
+        onClick={onClose} // Clicking the background closes the modal
+      >
+        {formContent}
+      </div>
+    );
+  }
+
+  // If not in a workspace, just render the normal form
+  return formContent;
 };
 
 export default TaskForm;

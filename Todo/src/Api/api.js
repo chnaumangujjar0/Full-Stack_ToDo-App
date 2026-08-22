@@ -142,7 +142,46 @@ export const readNotification = async (notificationId) => {
 // login activity api
 
 export const getLoginActivity = async (page,limit) => {
-  const res = await api.get(`activity/login-history?page=${page}&limit=10`)
-
+  const res = await api.get(`activity/login-history?page=${page}&limit=${limit}`)
   return res.data.data
+}
+
+// workspace apis 
+export const createWorkspace = async (workspace) => {
+  const res = await api.post("workspace/create",{
+    name : workspace.trim()
+  })
+
+  return res.data
+}
+
+export const getAllWorkspaces = async () => {
+  const res = await api.get("workspace/")
+  return res.data.data
+}
+
+export const getWorkspaceById = async (workspaceId) => {
+  const res = await api.get(`workspace/getWorkspaceById/${workspaceId}`)
+  return res.data.data
+}
+
+// invite api 
+export const sendInvite = async (workspaceId,username) => {
+  const res = await api.post(`invite/${workspaceId}/send-invite`,{
+    username: username.trim()
+  })
+  return res.data
+}
+
+export const getAllInvites = async () => {
+  const res = await api.get("invite/")
+  return res.data.data
+}
+
+export const respondToInvite = async (action, inviteId) => {
+  const res = await api.post(`invite/${inviteId}/response`,{
+    action
+  })
+
+  return res.data
 }

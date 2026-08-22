@@ -4,6 +4,8 @@ import { useAuth } from "../../context/AuthContext";
 import { logoutUser } from "../../Api/api";
 import { ToastContainer, toast } from "react-toastify";
 import NotificationDropdown from "./NotificationDropdown";
+import { UserRoundPlus } from "lucide-react";
+import InviteDropdown from "./InviteDropdown";
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user,setUser } = useAuth();
@@ -138,12 +140,32 @@ export const Header = () => {
                 </Link>
               )}
             </li>
+            <li>
+              {isOpen && (
+                <Link
+                  to="/workspace"
+                  className={`block px-3 py-2 rounded-sm hover:bg-stone-800 hover:text-white transition-colors cursor-pointer whitespace-nowrap ${!isOpen && "text-center px-0"}`}
+                >
+                  Workspace
+                </Link>
+              )}
+            </li>
           </ul>
         </div>
 
         <div className="relative flex flex-col align-bottom gap-3 ">
-          <div className="flex justify-start items-center gap-3 hover:bg-stone-800  md:p-2 rounded-sm" >
-            <NotificationDropdown/>
+          <div className="flex justify-start items-center gap-4 hover:bg-stone-800 md:p-2 rounded-sm">
+            <div className="pl-1">
+              <InviteDropdown/>
+            </div>
+            {isOpen && (
+            <p className="self-center truncate">Invite</p>
+            )}
+          </div>
+          <div className="flex justify-start items-center gap-4 hover:bg-stone-800 md:p-2 rounded-sm" >
+            <div className="pl-0.5">
+              <NotificationDropdown/>
+            </div>
             {isOpen && (
               <p className="self-center truncate">Notifications</p>
             )}

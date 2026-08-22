@@ -50,7 +50,7 @@ export default function NotificationDropdown() {
       if (left < margin) left = margin;
 
       setCoords({
-        top: rect.bottom + margin - 50,
+        top: rect.bottom + margin - 80,
         left,
       });
     };
@@ -85,13 +85,13 @@ export default function NotificationDropdown() {
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="relative items-center dark:text-gray-300 dark:hover:bg-gray-800 transition-colors focus:outline-none cursor-pointer pt-2"
+        className="relative flex items-center dark:text-gray-300 dark:hover:bg-gray-800 transition-colors focus:outline-none cursor-pointer"
         aria-label="Notifications"
       >
         <BellIcon width={20} height={20}/>
 
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full">
+          <span className="absolute -top-3 left-3 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full">
             {unreadCount}
           </span>
         )}

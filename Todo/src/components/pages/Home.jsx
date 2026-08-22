@@ -27,7 +27,7 @@ const Home = () => {
   const [taskStatus, setTaskStatus] = useState("pending");
   const [deadline, setDeadline] = useState(new Date());
   const [page, setPage] = useState(1);
-
+  const [limit,setLimit] = useState(5)
   const [stats, setStats] = useState({
     total: 0,
     completed: 0,
@@ -37,8 +37,7 @@ const Home = () => {
 
   const [dateFilter, setDateFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-
-  const totalPages = Math.max(1, Math.ceil(stats.total / LIMIT));
+  const totalPages = Math.max(1, Math.ceil(stats.total / limit));
 
   // ---- Data fetching -------------------------------------------------
 
@@ -182,11 +181,11 @@ const Home = () => {
 
   const goToNextPage = () => setPage((p) => Math.min(p + 1, totalPages));
   const goToPrevPage = () => setPage((p) => Math.max(p - 1, 1));
-
+  const onLimitChange = (value) => setLimit(value)
   return (
     <>
       <Loader isLoading={isLoading} />
-      <ToastContainer position="top-center" />
+      <ToastContainer position="top-left" />
       {isToastOpen && (
         <div className="fixed inset-0 z-40" style={{ background: "rgba(0,0,0,0.05)" }} />
       )}
@@ -224,6 +223,8 @@ const Home = () => {
         totalPages={totalPages}
         onPrev={goToPrevPage}
         onNext={goToNextPage}
+        limit={limit}
+        onLimitChange={onLimitChange}
       />
     </>
   );

@@ -1,18 +1,23 @@
 import { getLoginActivity } from "@/Api/api";
 import { useState, useEffect } from "react";
-
+import Pagination from "../common/Pagination";
 export default function LoginActivity() {
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-
+  const [limit,setLimit] = useState(10)
   useEffect(() => {
     const fetchHistory = async () => {
       setIsLoading(true);
-        getLoginActivity(page)
-        .then((res) => setHistory(res))
+        getLoginActivity(page,limit)
+
+        .then((res) => {
+          console.log(res)
+          setHistory(res.history)
+          setTotalPages(res.totalPages)
+        })
         .catch((err) => console.log(err))
         .finally(
             setIsLoading(false)
@@ -20,7 +25,7 @@ export default function LoginActivity() {
     };
 
     fetchHistory();
-  }, [page]);
+  }, [page,limit]);
 
   const formatDate = (dateString) => {
     const options = {
@@ -33,6 +38,9 @@ export default function LoginActivity() {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
+  const goToNextPage = () => setPage((p) => Math.min(p + 1, totalPages));
+  const goToPrevPage = () => setPage((p) => Math.max(p - 1, 1));
+  const onLimitChange = (value) => setLimit(value)
   return (
     <div className="w-full  max-w-4xl mt-20 mx-auto p-4 md:p-6 bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col">
       <div className="mb-6">
@@ -79,7 +87,8 @@ export default function LoginActivity() {
                     </td>
                   </tr>
                 ) : (
-                  history.map((session) => (
+                  history.map((session) => 
+                    (
                     <tr
                       key={session._id}
                       className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
@@ -114,37 +123,14 @@ export default function LoginActivity() {
         )}
       </div>
 
-      {!isLoading && totalPages > 1 && (
-        <div className="flex items-center justify-between pt-6 mt-4 border-t border-gray-200 dark:border-gray-800">
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            Page{" "}
-            <span className="font-medium text-gray-900 dark:text-white">
-              {page}
-            </span>{" "}
-            of{" "}
-            <span className="font-medium text-gray-900 dark:text-white">
-              {totalPages}
-            </span>
-          </span>
-
-          <div className="flex space-x-2">
-            <button
-              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-              disabled={page === 1}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700 transition-colors"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-              disabled={page === totalPages}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700 transition-colors"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPrev={goToPrevPage}
+        onNext={goToNextPage}
+        limit={limit}
+        onLimitChange={onLimitChange}
+      />
     </div>
   );
 }

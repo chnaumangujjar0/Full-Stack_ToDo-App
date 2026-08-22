@@ -1,11 +1,16 @@
 import { Router } from "express";
 import { verifyJwt } from "../middleware/auth.middleware.js";
-import { createWorkspace, respondToInvite, sendInvite } from "../controllers/workspace.controller.js";
+import {
+  createWorkspace,
+  getAllWorkspaces,
+  getWorkspaceById,
+} from "../controllers/workspace.controller.js";
 
-const router = Router()
-router.use(verifyJwt)
-router.route("/create").post(createWorkspace)
-router.route("/:workspaceId/send-invite").post(sendInvite)
-router.route("/:inviteId/response").post(respondToInvite)
+const router = Router();
+router.use(verifyJwt);
+router.route("/").get(getAllWorkspaces);
+router.route("/getWorkspaceById/:workspaceId").get(getWorkspaceById)
+router.route("/create").post(createWorkspace);
 
-export default router
+
+export default router;

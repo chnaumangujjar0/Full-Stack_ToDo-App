@@ -29,6 +29,10 @@ const todoSchema = new Schema(
         workspace: {
             type: String,
             default: "none"
+        },
+        assignedTo: {
+            type: mongoose.Types.ObjectId,
+            ref: "User"
         }
     },
     {timestamps: true}

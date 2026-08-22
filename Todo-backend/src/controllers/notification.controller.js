@@ -8,7 +8,6 @@ export const getAllNotifications = asyncHandler(async (req,res) => {
         user: req.user._id,
         isRead: false
     })
-    console.log(notifications)
 
     return res.status(200).json(
         new ApiResponse(

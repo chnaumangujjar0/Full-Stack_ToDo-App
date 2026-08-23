@@ -5,26 +5,31 @@ import { ApiResponse } from "../utils/apiResponse.js";
 import mongoose, { isValidObjectId } from "mongoose";
 
 const addTask = asyncHandler(async (req, res) => {
-  const { title, description, status = "pending",deadline } = req.body;
+  const { title, description, status = "pending",deadline,workspaceId,assignedTo } = req.body;
   const validStatuses = ["pending", "in-progress", "completed"];
-
+  const query = {}
   if (!(title || description)) {
     throw new ApiError(400, "title and description is required");
   }
-
+  
   if (!validStatuses.includes(status)) {
     throw new ApiError(400, "Status must be pending, in-progress, or completed");
   }
+  
+  query.title = title.trim();
+  query.description = description.trim();
+  query.deadline = deadline;
+  query.owner = req.user._id
+  query.status = status;
+  if(assignedTo != ""){
+    query.assignedTo = assignedTo
+  }
+  if(workspaceId){
+    query.workspace = workspaceId
+  }
+  const todo = await Todo.create(query);
 
-  const todo = await Todo.create({
-    title: title.trim(),
-    description: description.trim(),
-    status,
-    owner: req.user._id,
-    deadline 
-  });
-
-  if (!todo) {
+  if (!todo.length == 0) {
     throw new ApiError(401, "todo is not created");
   }
 
@@ -34,9 +39,10 @@ const addTask = asyncHandler(async (req, res) => {
 });
 
 const getAllTasks = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 5, filter = "all", status = "all",workspace ="none" } = req.query;
+  const { page = 1, limit = 5, filter = "all", status = "all",workspaceId ="none" } = req.query;
   let query = {};
-  query.workspace = workspace
+  console.log(workspaceId)
+  query.workspace = workspaceId
   const now = new Date();
   query.owner = req.user._id
   if (filter === "today") {
@@ -210,7 +216,8 @@ const countData = asyncHandler(async (req, res) => {
   const data = await Todo.aggregate([
     {
       $match: {
-        owner: new mongoose.Types.ObjectId(req.user._id)
+        owner: new mongoose.Types.ObjectId(req.user._id),
+        workspace: "none"
       }
     },
     {
@@ -254,6 +261,19 @@ const countData = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, data, "data fetched successfully"));
 });
 
+const workspaceTasks = asyncHandler(async (req,res) => {
+  const {workspaceId} = req.params
+  console.log(workspaceId)
+  const tasks = await Todo.find({workspace: workspaceId}).populate("assignedTo","username fullName")
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      tasks,
+      "Workspace tasks fetched Successfully!"
+    )
+  )
+})
 export {
   addTask,
   getAllTasks,
@@ -262,4 +282,5 @@ export {
   gettaskById,
   toggleStatus,
   countData,
+  workspaceTasks
 };

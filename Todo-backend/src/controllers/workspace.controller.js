@@ -1,7 +1,5 @@
 import { Workspace } from "../models/workspace.model.js";
-import { Invite } from "../models/invite.model.js";
-import { User } from "../models/user.model.js";
-import { Notification } from "../models/notification.model.js";
+import {Todo} from "../models/todo.model.js"
 import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/apiResponse.js";
@@ -103,3 +101,44 @@ export const getWorkspaceById = asyncHandler(async (req, res) => {
       ),
     );
 });
+
+export const deleteWorkspace = asyncHandler(async (req,res) => {
+  const {workspaceId} = req.params
+
+  if(!isValidObjectId(workspaceId)){
+    throw new ApiError(400,"Invalid Object Id.")
+  }
+
+  await Workspace.findByIdAndDelete(workspaceId)
+  await Todo.deleteMany({workspace: workspaceId})
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {},
+      "Workspace delted successfully!"
+    )
+  )
+
+})
+
+export const updateWorkspace = asyncHandler(async (req,res) => {
+  const {workspaceId} = req.params
+  const {name} = req.body
+
+  const workspace = await Workspace.findByIdAndUpdate(
+    workspaceId,
+    {
+      $set:{name : name.trim()}
+    },
+    {"returnDocument": "after"}
+  )
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      workspace,
+      "Update workspace Successfully!"
+    )
+  )
+})

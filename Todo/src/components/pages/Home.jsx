@@ -44,7 +44,7 @@ const Home = () => {
   const fetchTasks = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await getAllTasks(page, LIMIT, dateFilter, statusFilter);
+      const res = await getAllTasks(page, limit, dateFilter, statusFilter);
       setTasks(Array.isArray(res) ? res : []);
     } catch (err) {
       toast.error("Couldn't load tasks, try again.");
@@ -52,7 +52,7 @@ const Home = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [page, dateFilter, statusFilter]);
+  }, [page, dateFilter, statusFilter, limit]);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -185,7 +185,7 @@ const Home = () => {
   return (
     <>
       <Loader isLoading={isLoading} />
-      <ToastContainer position="top-left" />
+      <ToastContainer position="top-right" />
       {isToastOpen && (
         <div className="fixed inset-0 z-40" style={{ background: "rgba(0,0,0,0.05)" }} />
       )}

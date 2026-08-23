@@ -1,38 +1,56 @@
-import { getWorkspaceById } from "@/Api/api";
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router"; 
+import { useParams } from "react-router";
+import { toast, ToastContainer } from "react-toastify";
+import {
+  fetchWorkspaceTasks,
+  getWorkspaceById,
+  updateStatus,
+  deleteTaskById,
+  getSingleTaskData,
+  updateTaskDetails,
+} from "@/Api/api";
 import InviteMemberModal from "../common/InviteMemberModal";
 import TaskForm from "../common/TaskForm";
+import TaskList from "../common/TaskList.jsx";
+import EditTaskToast from "../common/EditTaskToast.jsx";
 import Loader from "../common/Loader.jsx";
 
 const WorkspaceDetails = () => {
   const { workspaceId } = useParams();
   const [workspace, setWorkspace] = useState(null);
   const [tasks, setTasks] = useState([]);
-  
-  // Page Loading State
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Modal Visibility States
+  const [updatingId, setUpdatingId] = useState("");
+  const [isToastOpen, setIsToastOpen] = useState(false);
+
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false); // NEW: Controls the Task Modal
-  
-  // Task Form States
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+
   const [taskStatus, setTaskStatus] = useState("pending");
   const [deadline, setDeadline] = useState(new Date());
-  const [isTaskSubmitting, setIsTaskSubmitting] = useState(false); // NEW: Prevents full-page unmount on submit
-  const [members,setMembers] = useState([])
-  // Reusable fetch function so we can call it after adding a new task
+  const [isTaskSubmitting, setIsTaskSubmitting] = useState(false);
+
   const fetchWorkspaceDetails = async () => {
     setIsLoading(true);
     try {
       const res = await getWorkspaceById(workspaceId);
-      console.log(res?.[0]);
-      setWorkspace(res?.[0]);
-      setMembers(res?.[0].membersDetails)
-      
+      const ws = res?.[0];
+
+      if (!ws) {
+        toast.error("Workspace not found or you don't have access.");
+        setWorkspace(null);
+        setTasks([]);
+        return;
+      }
+
+      setWorkspace(ws);
+
+      const taskData = await fetchWorkspaceTasks(workspaceId);
+      setTasks(Array.isArray(taskData) ? taskData : []);
     } catch (err) {
-      console.log(err);
+      toast.error("Couldn't load workspace, try again.");
+      setWorkspace(null);
+      setTasks([]);
     } finally {
       setIsLoading(false);
     }
@@ -40,38 +58,136 @@ const WorkspaceDetails = () => {
 
   useEffect(() => {
     fetchWorkspaceDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workspaceId]);
 
-  const formatDate = (isoString) => {
-    return new Date(isoString).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  // ---- Status update ---------------------------------------------------
+
+  const handleStatusChange = async (taskId, status) => {
+    setUpdatingId(taskId);
+    try {
+      await updateStatus(taskId, status);
+      await fetchWorkspaceDetails();
+    } catch (err) {
+      toast.error("Couldn't update task status, try again.");
+    } finally {
+      setUpdatingId("");
+    }
   };
 
+  // ---- Delete ---------------------------------------------------------
+
+  const deleteTask = async (taskId) => {
+    try {
+      await deleteTaskById(taskId);
+      await fetchWorkspaceDetails();
+    } catch (err) {
+      toast.error("Couldn't delete task, try again.");
+    }
+  };
+
+  const handleDelete = (taskId) => {
+    setIsToastOpen(true);
+    toast(
+      ({ closeToast }) => (
+        <div className="flex flex-col gap-3 sm:gap-4 m-3 sm:m-4 w-56 sm:w-72 bg-[#FFFDF8] rounded-sm p-4 sm:p-5">
+          <p className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono">
+            Confirm delete
+          </p>
+          <p className="font-serif text-lg sm:text-xl text-stone-900 leading-snug">
+            Delete this task?
+          </p>
+          <div className="flex gap-2 justify-end mt-1">
+            <button
+              onClick={() => {
+                closeToast();
+                setIsToastOpen(false);
+              }}
+              className="px-4 py-1.5 rounded-sm border border-stone-300 text-stone-600 text-sm hover:border-stone-500 transition-colors"
+            >
+              No
+            </button>
+            <button
+              onClick={() => {
+                closeToast();
+                setIsToastOpen(false);
+                deleteTask(taskId);
+              }}
+              className="px-4 py-1.5 rounded-sm bg-red-700 text-white text-sm hover:bg-red-800 transition-colors"
+            >
+              Yes
+            </button>
+          </div>
+        </div>
+      ),
+      { autoClose: false, closeOnClick: false, closeButton: false },
+    );
+  };
+
+  // ---- Edit ---------------------------------------------------------
+
+  const handleEdit = async (taskId) => {
+    let data;
+    try {
+      data = await getSingleTaskData(taskId);
+    } catch (err) {
+      toast.error("Couldn't load task details.");
+      return;
+    }
+
+    setIsToastOpen(true);
+
+    const handleSave = async (id, title, description, taskDeadline) => {
+      await updateTaskDetails(id, title, description, taskDeadline);
+      await fetchWorkspaceDetails();
+      toast.dismiss(toastId);
+      setIsToastOpen(false);
+    };
+
+    const handleCancel = () => {
+      toast.dismiss(toastId);
+      setIsToastOpen(false);
+    };
+
+    const toastId = toast(
+      <EditTaskToast
+        taskId={data._id}
+        initialTitle={data.title}
+        initialDescription={data.description}
+        initialDeadline={data.deadline ? new Date(data.deadline) : new Date()}
+        onSave={handleSave}
+        onCancel={handleCancel}
+      />,
+      { autoClose: false, closeOnClick: false, closeButton: false },
+    );
+  };
 
   return (
     <div>
-      <Loader isLoading={isLoading}/>
-      <InviteMemberModal 
+      <Loader isLoading={isLoading} />
+      <ToastContainer position="top-center" />
+      {isToastOpen && (
+        <div className="fixed inset-0 z-20" style={{ background: "rgba(0,0,0,0.05)" }} />
+      )}
+
+      <InviteMemberModal
         isOpen={isInviteModalOpen}
         onClose={() => setIsInviteModalOpen(false)}
         workspaceId={workspace?._id}
         workspaceName={workspace?.name}
       />
-      
-      
+
       {isTaskModalOpen && (
         <TaskForm
           taskStatus={taskStatus}
           setTaskStatus={setTaskStatus}
           deadline={deadline}
           setDeadline={setDeadline}
-          setIsLoading={setIsTaskSubmitting} // Passed separate loading state
+          setIsLoading={setIsTaskSubmitting}
           workspaceId={workspace?._id}
-          workspaceMembers={workspace?.memberDetails} // Added fallback array
-          onClose={() => setIsTaskModalOpen(false)} // Pass the close function
-          onTaskAdded={() => {
-            // Instantly refresh the workspace data to show the new task
-            fetchWorkspaceDetails();
-          }}
+          workspaceMembers={workspace?.memberDetails || []}
+          onClose={() => setIsTaskModalOpen(false)}
+          onTaskAdded={fetchWorkspaceDetails}
         />
       )}
 
@@ -82,22 +198,19 @@ const WorkspaceDetails = () => {
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
               {workspace?.name}
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Workspace Tasks
-            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Workspace Tasks</p>
           </div>
-          
+
           <div className="flex gap-3">
             {workspace?.role === "owner" && (
               <>
-                <button 
+                <button
                   onClick={() => setIsInviteModalOpen(true)}
                   className="px-4 py-2 bg-white dark:bg-gray-800 text-stone-700 dark:text-gray-200 border border-stone-300 dark:border-gray-700 hover:bg-stone-50 dark:hover:bg-gray-700 text-sm font-medium rounded-sm transition-colors shadow-sm"
                 >
                   Invite Member
                 </button>
-                {/* BUG FIX: Added onClick to open the Task Modal */}
-                <button 
+                <button
                   onClick={() => setIsTaskModalOpen(true)}
                   className="px-5 py-2 bg-emerald-800 hover:bg-emerald-900 text-emerald-50 text-sm font-medium rounded-sm transition-colors shadow-sm"
                 >
@@ -108,57 +221,16 @@ const WorkspaceDetails = () => {
           </div>
         </div>
 
-        {/* Vertical Task List */}
-        <div className="bg-[#FFFDF8] dark:bg-gray-900 border border-stone-200 dark:border-gray-800 rounded-sm shadow-sm overflow-hidden">
-          {tasks.length === 0 ? (
-            <div className="text-center py-12 text-stone-500 dark:text-gray-400">
-              No tasks in this workspace yet.
-            </div>
-          ) : (
-            <div className="divide-y divide-stone-200 dark:divide-gray-800">
-              {tasks.map((task) => (
-                <div key={task._id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-stone-50 dark:hover:bg-gray-800/50 transition-colors">
-                  
-                  {/* Title & Status */}
-                  <div className="flex flex-col gap-2 sm:w-1/2">
-                    <span className="text-base font-semibold text-stone-900 dark:text-white">
-                      {task.title}
-                    </span>
-                    <div>
-                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-sm ${
-                        task.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                        task.status === 'in-progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
-                        'bg-stone-200 text-stone-700 dark:bg-gray-700 dark:text-gray-300'
-                      }`}>
-                        {task.status}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Assignment & Deadline */}
-                  <div className="flex flex-row items-center justify-between sm:justify-end sm:w-1/2 gap-6 text-sm text-stone-600 dark:text-gray-400">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] tracking-[0.1em] uppercase text-stone-400 font-mono hidden sm:inline">
-                        Assignee:
-                      </span>
-                      <span className={task.assignedTo ? "font-medium text-stone-800 dark:text-gray-200" : "italic text-stone-400"}>
-                        {task.assignedTo ? task.assignedTo.username : "Unassigned"}
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 min-w-[100px] justify-end">
-                      <svg className="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span>{formatDate(task.deadline)}</span>
-                    </div>
-                  </div>
-
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Task List — shared component, role-gated edit/delete */}
+        <TaskList
+          tasks={tasks}
+          isLoading={isLoading}
+          updatingId={updatingId}
+          role={workspace?.role}
+          onStatusChange={handleStatusChange}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
       </div>
     </div>
   );

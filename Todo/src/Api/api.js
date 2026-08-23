@@ -4,14 +4,17 @@ import api from "./axiosInstance.js"
 import { useAuth } from "../context/AuthContext.jsx";
 // todo apis
 
- export const postTask = async (title,description,status = "pending",deadline) => {
+ export const postTask = async (title,description,status = "pending",deadline,workspaceId,assignedTo) => {
+  console.log(workspaceId)
     await api.post(
         `todo/addTask`,
         {
           title: title.trim(),
           description: description.trim(),
           status,
-          deadline
+          deadline,
+          workspaceId,
+          assignedTo
         },
       );
 }
@@ -33,9 +36,9 @@ export const deleteTaskById = async (id) => {
     await api.delete(`todo/${id}`)
 }
 
-export const getAllTasks = async (page = 1, limit = 5, filter = "all", status = "all") => {
+export const getAllTasks = async (page = 1, limit = 5, filter = "all", status = "all",workspaceId = "none") => {
     try {
-    const res = await api.get(`todo?page=${page}&limit=${limit}&filter=${filter}&status=${status}`);
+    const res = await api.get(`todo?page=${page}&limit=${limit}&filter=${filter}&status=${status}&workspaceId=${workspaceId}`);
     return res.data.data
   } catch (err) {
     console.log(err);
@@ -46,7 +49,7 @@ export const updateStatus = async (id, status) => {
     await api.patch(`todo/toggle-status/${id}`, {
       status,
     });
-  }
+}
 
 export const totalData = async () => {
   try {
@@ -56,6 +59,11 @@ export const totalData = async () => {
   } catch (error) {
     console.log(error);
   }
+}
+
+export const fetchWorkspaceTasks = async (workspaceId) => {
+  const res = await api.get(`todo/workspace-tasks/${workspaceId}`)
+  return res.data.data
 }
 
 // user apis
@@ -165,6 +173,16 @@ export const getWorkspaceById = async (workspaceId) => {
   return res.data.data
 }
 
+export const deleteWorkspaceById = async (workspaceId) =>{
+  const res = await api.delete(`workspace/${workspaceId}/delete`)
+
+  return res.data.data
+}
+
+export const updateWorkspace = async (workspaceId, name) => {
+  const res = await api.patch(`workspace/${workspaceId}/update`,{name})
+  return res.data.data
+}
 // invite api 
 export const sendInvite = async (workspaceId,username) => {
   const res = await api.post(`invite/${workspaceId}/send-invite`,{

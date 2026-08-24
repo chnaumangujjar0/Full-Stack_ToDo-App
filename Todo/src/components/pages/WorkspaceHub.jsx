@@ -12,7 +12,7 @@ import {
 
 import CreateWorkspaceModal from "../common/CreateWorkspaceModal";
 import InviteMemberModal from "../common/InviteMemberModal";
-import UpdateWorkspaceModal from "../common/UpdateWorkspaceModal";
+import UpdateWorkspaceModal from "../common/UpdateWorkSpaceModal";
 import DeleteConfirmToast from "../common/DeleteConfirmToast.jsx";
 import Loader from "../common/Loader.jsx";
 import { getAllWorkspaces, deleteWorkspaceById  } from "@/Api/api"; // TODO: confirm deleteWorkspaceById is the real export name

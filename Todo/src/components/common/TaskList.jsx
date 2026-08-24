@@ -1,9 +1,7 @@
 import React from "react";
 import TaskItem from "./TaskItem.jsx";
 
-// `role` defaults to "owner" so any existing usage of TaskList that never
-// passes it (e.g. a personal, non-workspace task list) keeps full
-// permissions exactly as before — this prop is purely additive.
+
 const TaskList = ({
   tasks,
   isLoading,
@@ -13,8 +11,7 @@ const TaskList = ({
   onDelete,
   role = "owner",
 }) => {
-  // Single source of truth for "can this user manage tasks" — computed once
-  // here rather than re-derived inside every TaskItem instance.
+  
   const canManage = role === "owner";
 
   return (

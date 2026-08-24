@@ -18,6 +18,7 @@ import TaskList from "../common/TaskList.jsx";
 import Pagination from "../common/Pagination.jsx";
 import EditTaskToast from "../common/EditTaskToast.jsx";
 import DeleteConfirmToast from "../common/DeleteConfirmToast.jsx";
+import { socket } from "@/socket.js";
 
 const Home = () => {
   const [tasks, setTasks] = useState([]);
@@ -72,6 +73,29 @@ const Home = () => {
     }
   }, []);
 
+  useEffect(() => {
+    
+
+    function onConnect() {
+      console.log("🟢 Connected to Socket.io server with ID:", socket.id);
+    }
+
+    function onDisconnect() {
+      console.log("🔴 Disconnected from Socket.io server");
+    }
+
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+    console.log("🚀 Frontend Alert: Attempting to connect to Socket.io...");
+    if (!socket.connected) {
+      socket.connect();
+    }
+    return () => {
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
+      // socket.disconnect(); 
+    };
+  },[])
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
@@ -185,7 +209,7 @@ const Home = () => {
   return (
     <>
       <Loader isLoading={isLoading} />
-      <ToastContainer position="top-right" />
+      <ToastContainer position="top-center" />
       {isToastOpen && (
         <div className="fixed inset-0 z-40" style={{ background: "rgba(0,0,0,0.05)" }} />
       )}

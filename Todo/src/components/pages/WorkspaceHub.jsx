@@ -23,10 +23,8 @@ const WorkspaceHub = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  // Which workspace (if any) is being shared/updated right now — drives
-  // the two role-gated modals below.
-  const [shareTarget, setShareTarget] = useState(null); // { _id, name } | null
-  const [updateTarget, setUpdateTarget] = useState(null); // { _id, name } | null
+  const [shareTarget, setShareTarget] = useState(null); 
+  const [updateTarget, setUpdateTarget] = useState(null);
 
   const { user } = useAuth();
 
@@ -54,7 +52,7 @@ const WorkspaceHub = () => {
           closeToast={closeToast}
           onConfirm={async () => {
             try {
-              // TODO: confirm this matches your real API function name/signature
+
               await deleteWorkspaceById(workspace._id);
               toast.success("Workspace deleted.");
               await fetchWorkspaces();
@@ -156,13 +154,6 @@ const WorkspaceHub = () => {
                               <button
                                 type="button"
                                 aria-label="Workspace actions"
-                                // Stop this click from bubbling up to the
-                                // parent <Link> — otherwise opening the menu
-                                // would also navigate into the workspace.
-                                // (Menu items themselves don't need this: the
-                                // menu content is portaled to document.body,
-                                // so it isn't inside the Link's DOM tree and
-                                // clicks there never bubble through it.)
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();

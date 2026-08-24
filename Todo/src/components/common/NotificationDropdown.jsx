@@ -21,8 +21,10 @@ export default function NotificationDropdown() {
   // Close on click outside — checks both the button and the portal-rendered dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
-      const clickedButton = buttonRef.current && buttonRef.current.contains(event.target);
-      const clickedDropdown = dropdownRef.current && dropdownRef.current.contains(event.target);
+      const clickedButton =
+        buttonRef.current && buttonRef.current.contains(event.target);
+      const clickedDropdown =
+        dropdownRef.current && dropdownRef.current.contains(event.target);
       if (!clickedButton && !clickedDropdown) {
         setIsOpen(false);
       }
@@ -38,11 +40,11 @@ export default function NotificationDropdown() {
     const updatePosition = () => {
       if (!buttonRef.current) return;
       const rect = buttonRef.current.getBoundingClientRect();
-      const dropdownWidth = 320; 
+      const dropdownWidth = 320;
       const margin = 8;
 
       let left = rect.left + 55;
-      
+
       if (left + dropdownWidth + margin > window.innerWidth) {
         left = window.innerWidth - dropdownWidth - margin;
       }
@@ -71,8 +73,8 @@ export default function NotificationDropdown() {
       .then(() => {
         setNotifications((prev) =>
           prev.map((notif) =>
-            notif._id === id ? { ...notif, isRead: true } : notif
-          )
+            notif._id === id ? { ...notif, isRead: true } : notif,
+          ),
         );
       })
       .catch((err) => console.log(err));
@@ -88,7 +90,7 @@ export default function NotificationDropdown() {
         className="relative flex items-center dark:text-gray-300 dark:hover:bg-gray-800 transition-colors focus:outline-none cursor-pointer"
         aria-label="Notifications"
       >
-        <BellIcon width={20} height={20}/>
+        <BellIcon width={20} height={20} />
 
         {unreadCount > 0 && (
           <span className="absolute -top-3 left-3 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-red-500 rounded-full">
@@ -114,7 +116,15 @@ export default function NotificationDropdown() {
               )}
             </div>
 
-            <div className="max-h-[350px] overflow-y-auto">
+            <div
+              className="max-h-[150px] overflow-y-auto pr-1 
+                [scrollbar-width:thin] 
+                [&::-webkit-scrollbar]:w-1.5 
+                [&::-webkit-scrollbar-track]:bg-transparent 
+                [&::-webkit-scrollbar-thumb]:bg-gray-300 
+                dark:[&::-webkit-scrollbar-thumb]:bg-gray-700 
+                [&::-webkit-scrollbar-thumb]:rounded-full rounded-b-lg"
+            >
               {notifications.length === 0 ? (
                 <div className="p-6 text-center text-gray-500 dark:text-gray-400 text-sm">
                   No notifications yet.
@@ -147,7 +157,7 @@ export default function NotificationDropdown() {
               )}
             </div>
           </div>,
-          document.body
+          document.body,
         )}
     </div>
   );

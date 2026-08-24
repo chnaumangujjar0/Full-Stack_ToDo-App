@@ -35,7 +35,7 @@ const EditTaskToast = ({
   };
 
   return (
-    <div className=" flex flex-col gap-3 m-4 w-64 sm:w-72 ">
+    <div className=" flex flex-col gap-3 m-4 w-64 sm:w-72 bg-white">
       <p className="text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono">Edit task</p>
       <div>
         <DatePicker date={deadline} setDate={setDeadline} />

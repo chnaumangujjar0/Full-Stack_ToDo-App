@@ -41,7 +41,6 @@ const addTask = asyncHandler(async (req, res) => {
 const getAllTasks = asyncHandler(async (req, res) => {
   const { page = 1, limit = 5, filter = "all", status = "all",workspaceId ="none" } = req.query;
   let query = {};
-  console.log(workspaceId)
   query.workspace = workspaceId
   const now = new Date();
   query.owner = req.user._id
@@ -263,7 +262,6 @@ const countData = asyncHandler(async (req, res) => {
 
 const workspaceTasks = asyncHandler(async (req,res) => {
   const {workspaceId} = req.params
-  console.log(workspaceId)
   const tasks = await Todo.find({workspace: workspaceId}).populate("assignedTo","username fullName")
 
   return res.status(200).json(

@@ -24,12 +24,20 @@ app.use(express.urlencoded({extended : true, limit : "16kb"}))
 app.use(express.static("public"))
 app.use(cookieParser())
 io.on("connection", (socket) => {
-  console.log("⚡ Backend Alert: A user connected with Socket ID:", socket.id);
+  const userId = socket.handshake.auth.userId;
+
+  if (userId) {
+    // 👉 2. Put the user in a private room named after their ID
+    socket.join(userId);
+    console.log(`⚡ User ${userId} connected and joined their private room.`);
+  } else {
+    console.log("⚠️ A user connected, but no ID was provided.");
+  }
   
   socket.on("disconnect", () => {
-    console.log("🔴 Backend Alert: User disconnected:", socket.id);
+    console.log(`🔴 User ${userId || socket.id} disconnected.`);
   });
-});
+  });
 // routes import 
 import todoRouter from "./routes/todo.routes.js"
 import userRouter from "./routes/user.routes.js"

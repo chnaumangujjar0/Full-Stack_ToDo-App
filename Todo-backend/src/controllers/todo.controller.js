@@ -3,7 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { Todo } from "../models/todo.model.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import mongoose, { isValidObjectId } from "mongoose";
-
+import {Notification} from "../models/notification.model.js"
 const addTask = asyncHandler(async (req, res) => {
   const { title, description, status = "pending",deadline,workspaceId,assignedTo } = req.body;
   const validStatuses = ["pending", "in-progress", "completed"];
@@ -32,7 +32,18 @@ const addTask = asyncHandler(async (req, res) => {
   if (!todo.length == 0) {
     throw new ApiError(401, "todo is not created");
   }
-
+  
+  const io = req.app.get("io");
+  if (todo.assignedTo) {
+    const assigneeId = todo.assignedTo.toString();
+    const newNotification = await Notification.create({
+        user: assigneeId, // The user receiving the alert
+        message: `You were assigned a new task: ${todo.title}`,
+        type: 'task_assigned',
+        isRead: false
+    });
+    io.to(assigneeId).emit("new_notification", newNotification);
+  }
   return res
     .status(200)
     .json(new ApiResponse(200, todo, "todo added successfully"));

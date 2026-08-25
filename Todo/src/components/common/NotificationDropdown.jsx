@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { getAllNotifications, readNotification } from "../../Api/api";
 import { BellIcon } from "lucide-react";
-
+import { socket } from "@/socket";
 export default function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -33,7 +33,16 @@ export default function NotificationDropdown() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Recalculate position whenever the dropdown opens, and keep it in sync on resize/scroll
+  useEffect(() => {  
+    const handleNewNotification = (newNotif) => {
+      setNotifications((prevNotifications) => [newNotif, ...prevNotifications]);
+      
+    };
+    socket.on("new_notification", handleNewNotification);
+    return () => {
+      socket.off("new_notification", handleNewNotification);
+    };
+  }, []);
   useEffect(() => {
     if (!isOpen) return;
 

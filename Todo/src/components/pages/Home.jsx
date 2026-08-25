@@ -10,7 +10,6 @@ import {
 import Loader from "../common/Loader.jsx";
 import { toast, ToastContainer } from "react-toastify";
 
-import { LIMIT } from "../common/constants.js";
 import TaskForm from "../common/TaskForm.jsx";
 import StatsPanel from "../common/StatsPanel.jsx";
 import TaskFilters from "../common/TaskFilters.jsx";
@@ -19,8 +18,10 @@ import Pagination from "../common/Pagination.jsx";
 import EditTaskToast from "../common/EditTaskToast.jsx";
 import DeleteConfirmToast from "../common/DeleteConfirmToast.jsx";
 import { socket } from "@/socket.js";
+import { useAuth } from "@/context/AuthContext.jsx";
 
 const Home = () => {
+  const {user} = useAuth()
   const [tasks, setTasks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isToastOpen, setIsToastOpen] = useState(false);
@@ -87,15 +88,23 @@ const Home = () => {
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     console.log("🚀 Frontend Alert: Attempting to connect to Socket.io...");
+    socket.auth = { userId: user._id };
+    const handleNewTask = (data) => {
+      console.log("Real-time data received:", data);
+      toast.info(`🔔 ${data.message}: ${data.title}`);
+      refreshAll()
+    };
+
+    // 👉 2. Start listening
+    socket.on("new_task_assigned", handleNewTask);
     if (!socket.connected) {
       socket.connect();
     }
     return () => {
-      socket.off('connect', onConnect);
-      socket.off('disconnect', onDisconnect);
-      // socket.disconnect(); 
+      socket.off("new_task_assigned", handleNewTask);
     };
-  },[])
+  },[user])
+  
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);

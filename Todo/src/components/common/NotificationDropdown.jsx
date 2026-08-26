@@ -33,6 +33,7 @@ export default function NotificationDropdown() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  
   useEffect(() => {  
     const handleNewNotification = (newNotif) => {
       setNotifications((prevNotifications) => [newNotif, ...prevNotifications]);

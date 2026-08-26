@@ -1,11 +1,12 @@
-import React, { useContext, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../../context/AuthContext";
 import { logoutUser } from "../../Api/api";
 import { ToastContainer, toast } from "react-toastify";
 import NotificationDropdown from "./NotificationDropdown";
-import { UserRoundPlus } from "lucide-react";
 import InviteDropdown from "./InviteDropdown";
+import { socket } from "@/socket";
+
 export const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user,setUser } = useAuth();
@@ -57,6 +58,27 @@ export const Header = () => {
   const redirect = () => {
     navigate("/login");
   };
+  useEffect(() => {
+      
+  
+      function onConnect() {
+        console.log("🟢 Connected to Socket.io server with ID:", socket.id);
+      }
+  
+      function onDisconnect() {
+        console.log("🔴 Disconnected from Socket.io server");
+      }
+  
+      socket.on('connect', onConnect);
+      socket.on('disconnect', onDisconnect);
+      console.log("🚀 Frontend Alert: Attempting to connect to Socket.io...");
+      socket.auth = { userId: user?._id };
+      // 👉 2. Start listening
+      if (!socket.connected) {
+        socket.connect();
+      }
+      
+    },[user])
   return (
     <>
       <ToastContainer position="top-center" />

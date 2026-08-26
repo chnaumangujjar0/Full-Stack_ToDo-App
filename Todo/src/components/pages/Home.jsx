@@ -17,7 +17,6 @@ import TaskList from "../common/TaskList.jsx";
 import Pagination from "../common/Pagination.jsx";
 import EditTaskToast from "../common/EditTaskToast.jsx";
 import DeleteConfirmToast from "../common/DeleteConfirmToast.jsx";
-import { socket } from "@/socket.js";
 import { useAuth } from "@/context/AuthContext.jsx";
 
 const Home = () => {
@@ -74,37 +73,6 @@ const Home = () => {
     }
   }, []);
 
-  useEffect(() => {
-    
-
-    function onConnect() {
-      console.log("🟢 Connected to Socket.io server with ID:", socket.id);
-    }
-
-    function onDisconnect() {
-      console.log("🔴 Disconnected from Socket.io server");
-    }
-
-    socket.on('connect', onConnect);
-    socket.on('disconnect', onDisconnect);
-    console.log("🚀 Frontend Alert: Attempting to connect to Socket.io...");
-    socket.auth = { userId: user._id };
-    const handleNewTask = (data) => {
-      console.log("Real-time data received:", data);
-      toast.info(`🔔 ${data.message}: ${data.title}`);
-      refreshAll()
-    };
-
-    // 👉 2. Start listening
-    socket.on("new_task_assigned", handleNewTask);
-    if (!socket.connected) {
-      socket.connect();
-    }
-    return () => {
-      socket.off("new_task_assigned", handleNewTask);
-    };
-  },[user])
-  
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);

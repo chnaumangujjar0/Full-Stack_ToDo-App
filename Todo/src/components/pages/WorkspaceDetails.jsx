@@ -14,7 +14,8 @@ import TaskForm from "../common/TaskForm";
 import TaskList from "../common/TaskList.jsx";
 import EditTaskToast from "../common/EditTaskToast.jsx";
 import Loader from "../common/Loader.jsx";
-
+import { socket } from "@/socket";
+import { Socket } from "socket.io-client";
 const WorkspaceDetails = () => {
   const { workspaceId } = useParams();
   const [workspace, setWorkspace] = useState(null);
@@ -22,7 +23,7 @@ const WorkspaceDetails = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState("");
   const [isToastOpen, setIsToastOpen] = useState(false);
-
+  const [members,setMembers] = useState([])
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
@@ -44,6 +45,7 @@ const WorkspaceDetails = () => {
       }
 
       setWorkspace(ws);
+      setMembers(ws.memberDetails)
 
       const taskData = await fetchWorkspaceTasks(workspaceId);
       setTasks(Array.isArray(taskData) ? taskData : []);
@@ -55,10 +57,69 @@ const WorkspaceDetails = () => {
       setIsLoading(false);
     }
   };
-
+  
   useEffect(() => {
     fetchWorkspaceDetails();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    const joinWorkspaceRoom = () => {
+      if (workspaceId) {
+        console.log("Entering workspace socket room:", workspaceId);
+        socket.emit("join_workspace", workspaceId);
+      }
+    };
+
+    if (socket.connected) {
+      joinWorkspaceRoom();
+    }
+    socket.on("connect", joinWorkspaceRoom);
+
+    const handleStatusUpdate = (updatedTask) => {
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task._id === updatedTask._id ? updatedTask : task
+        )
+      );
+    };
+
+    const handleNewMember = (user) => {
+      const newMember = {
+        _id: user._id,
+        avatar: user.avatar,
+        username: user.username,
+      };
+
+      setMembers((prev) => {
+        const isDuplicate = prev.some((member) => member._id === newMember._id);
+        if (isDuplicate) return prev;
+        
+        return [newMember, ...prev];
+      });
+    };
+
+    const handleNewTask = (todo) => {
+      console.log("Real-time task received:", todo);
+      console.log("i am here")
+      setTasks((prev) => {
+        const isDuplicate = prev.some((task) => task._id === todo._id);
+        if (isDuplicate) return prev;
+
+        return [todo, ...prev];
+      });
+    };
+
+    socket.on("task_status_updated", handleStatusUpdate);
+    socket.on("invite_response", handleNewMember);
+    socket.on("new_task", handleNewTask);
+
+    return () => {
+      socket.off("task_status_updated", handleStatusUpdate);
+      socket.off("invite_response", handleNewMember); // ✅ Fixed lowercase 's'
+      socket.off("new_task", handleNewTask);
+      
+      if (workspaceId) {
+        socket.emit("leave_workspace", workspaceId);
+      }
+    };
   }, [workspaceId]);
 
   // ---- Status update ---------------------------------------------------
@@ -185,7 +246,7 @@ const WorkspaceDetails = () => {
           setDeadline={setDeadline}
           setIsLoading={setIsTaskSubmitting}
           workspaceId={workspace?._id}
-          workspaceMembers={workspace?.memberDetails || []}
+          workspaceMembers={members || []}
           onClose={() => setIsTaskModalOpen(false)}
           onTaskAdded={fetchWorkspaceDetails}
         />

@@ -27,7 +27,7 @@ const addTask = asyncHandler(async (req, res) => {
   if(workspaceId){
     query.workspace = workspaceId
   }
-  const todo = await Todo.create(query);
+  const todo = (await Todo.create(query))
 
   if (!todo.length == 0) {
     throw new ApiError(401, "todo is not created");
@@ -43,6 +43,9 @@ const addTask = asyncHandler(async (req, res) => {
         isRead: false
     });
     io.to(assigneeId).emit("new_notification", newNotification);
+    const roomId = workspaceId.toString()
+    console.log("i am near to emitting the event")
+    io.to(roomId).emit("new_task",todo)
   }
   return res
     .status(200)
@@ -215,7 +218,20 @@ const toggleStatus = asyncHandler(async (req, res) => {
       },
     },
     { returnDocument: "after" },
-  );
+  ).populate("assignedTo","username fullName");
+  
+
+  const io = req.app.get("io")
+  if(task.assignedTo){
+    const newNotification = await Notification.create({
+        user: task.owner, // The user receiving the alert
+        message: `${task.assignedTo.username} change his assigned "${task.title}" task status from ${existingTask.status} to ${task.status}`,
+        type: 'status changed',
+        isRead: false
+    });
+    io.to(task.owner.toString()).emit("new_notification", newNotification);
+    io.to(task.workspace.toString()).emit("task_status_updated", task);
+  }
 
   return res
     .status(200)

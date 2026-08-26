@@ -27,15 +27,18 @@ io.on("connection", (socket) => {
   const userId = socket.handshake.auth.userId;
 
   if (userId) {
-    // 👉 2. Put the user in a private room named after their ID
     socket.join(userId);
-    console.log(`⚡ User ${userId} connected and joined their private room.`);
+    console.log(` User ${userId} connected and joined their private room.`);
+    socket.on("join_workspace", (workspaceId) => {
+      socket.join(workspaceId);
+      console.log(`User ${userId} joined workspace room: ${workspaceId}`);
+    });
   } else {
-    console.log("⚠️ A user connected, but no ID was provided.");
+    console.log(" A user connected, but no ID was provided.");
   }
   
   socket.on("disconnect", () => {
-    console.log(`🔴 User ${userId || socket.id} disconnected.`);
+    console.log(` User ${userId || socket.id} disconnected.`);
   });
   });
 // routes import 

@@ -70,7 +70,7 @@ export const respondToInvite = asyncHandler( async (req, res) => {
     }
 
     // Find the pending invite that specifically belongs to the logged-in user
-    const invite = await Invite.findOne({ _id: inviteId, invitee: req.user._id, status: "pending" });
+    const invite = await Invite.findOne({ _id: inviteId, invitee: req.user._id, status: "pending" }).populate("invitee","username fullName")
     if (!invite) {
       throw new ApiError(404,"Invite not found")
     }
@@ -78,14 +78,24 @@ export const respondToInvite = asyncHandler( async (req, res) => {
     // Update the invite status
     invite.status = action;
     await invite.save();
-
+    const io = req.app.get("io")
     // If accepted, add the user to the workspace members array
     if (action === "accepted") {
       await Workspace.findByIdAndUpdate(
         invite.workspace,
         { $addToSet: { members: req.user._id } } // $addToSet prevents duplicate entries
       );
+
+      io.to(invite.workspace).emit("invite_accepted",req.user)
     }
+    const newNotification = await Notification.create({
+        user: invite.inviter, // The user receiving the alert
+        message: `"${invite.invitee.username}" is  ${action} your invite.`,
+        type: 'invite response',
+        isRead: false
+    });
+
+    io.to(invite.inviter.toString()).emit("new_notification", newNotification);
 
     return res.status(200).json(
         new ApiResponse(

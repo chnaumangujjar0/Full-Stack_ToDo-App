@@ -7,7 +7,7 @@ export const getAllNotifications = asyncHandler(async (req,res) => {
     const notifications = await Notification.find({
         user: req.user._id,
         isRead: false
-    })
+    }).sort({createdAt: -1})
 
     return res.status(200).json(
         new ApiResponse(
@@ -41,4 +41,4 @@ export const markAsRead = asyncHandler (async (req,res) => {
         {},
         "Notification mark as readed"
     )
-}) 
+})

@@ -17,7 +17,7 @@ const TaskItem = ({
   return(
     <li className="relative z-10 w-full flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 bg-[#FFFDF8] rounded-sm px-3 sm:px-6 lg:px-8 py-4 sm:py-5 border border-stone-200 shadow-[0_1px_3px_rgba(0,0,0,0.06)] dark:bg-gray-900 dark:border-gray-700 dark:text-white">
       <div className="flex-1 min-w-0 basis-full sm:basis-auto order-3 sm:order-0">
-        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap-reverse sm:flex-wrap">
           <Link to={`/${task._id}`} className="min-w-0">
             <span className="font-serif text-base sm:text-lg text-stone-900 truncate block dark:text-white">
               {task.title}

@@ -68,16 +68,27 @@ export const Header = () => {
       function onDisconnect() {
         console.log("🔴 Disconnected from Socket.io server");
       }
-  
+      const handleKicked = (data) => {
+      console.log("Kicked event received:", data);
+      toast.error(` ${data.message}`);
+      if (window.location.pathname.includes(data.workspaceId)) {
+        navigate("/"); 
+      }
+    };
       socket.on('connect', onConnect);
       socket.on('disconnect', onDisconnect);
+      socket.on("kicked_from_workspace", handleKicked);
       console.log("🚀 Frontend Alert: Attempting to connect to Socket.io...");
       socket.auth = { userId: user?._id };
       // 👉 2. Start listening
       if (!socket.connected) {
         socket.connect();
       }
-      
+      return () => {
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
+      socket.off("kicked_from_workspace", handleKicked);
+    }
     },[user])
   return (
     <>
@@ -175,7 +186,7 @@ export const Header = () => {
           </ul>
         </div>
 
-        <div className="relative flex flex-col align-bottom gap-3 ">
+        <div className="relative flex flex-col align-bottom gap-8 lg:gap-3 ">
           <div className="flex justify-start items-center gap-4 hover:bg-stone-800 md:p-2 rounded-sm">
             <div className="pl-1">
               <InviteDropdown/>

@@ -183,6 +183,15 @@ export const updateWorkspace = async (workspaceId, name) => {
   const res = await api.patch(`workspace/${workspaceId}/update`,{name})
   return res.data.data
 }
+
+export const removeWorkspaceMember = async(workspaceId,memberId) => {
+  const res = await api.post(`workspace/${workspaceId}/manage-member`,{
+    memberId :memberId
+  })
+
+  return res.data
+}
+
 // invite api 
 export const sendInvite = async (workspaceId,username) => {
   const res = await api.post(`invite/${workspaceId}/send-invite`,{

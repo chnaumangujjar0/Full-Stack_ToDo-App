@@ -164,7 +164,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Unauthorize access");
   }
 
-  try {
+    console.log("i am called")
     const decodedtoken = jwt.verify(
       incomingRefreshToken,
       process.env.REFRESH_TOKEN_SECRET,
@@ -203,13 +203,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
           "Token Generated Successfully",
         ),
       );
-  } catch (error) {
-    if (error instanceof ApiError) {
-      throw error;
-    }
-
-    throw new ApiError(401, error?.message || "Access token refresh failed");
-  }
+  
 });
 
 const logout = asyncHandler(async (req, res) => {

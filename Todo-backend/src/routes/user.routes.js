@@ -4,6 +4,7 @@ import {
   currentUser,
   login,
   logout,
+  refreshAccessToken,
   registerUser,
   requestForgotPasswordOtp,
   requestPasswordReset,
@@ -33,6 +34,7 @@ router.route("/update-details").patch(
   verifyJwt,
   updateDetails,
 );
+router.route("/refresh-token").post(refreshAccessToken)
 router.route("/request-reset-password").post(verifyJwt,requestPasswordReset)
 router.route("/verify-reset-password").patch(verifyJwt, verifyResetPassword);
 router.route("/request-forgot-password-otp").post(requestForgotPasswordOtp)

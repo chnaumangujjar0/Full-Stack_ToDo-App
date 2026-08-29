@@ -58,6 +58,7 @@ export  function ProtectedRoute() {
     return <Loader isLoading={loading} />;
   }
   if (!user) {
+    console.log("PROTECTED ROUTE REDIRECTING! User is:", user);
     return <Navigate to="/login" replace />;
   }
   return <Outlet />;

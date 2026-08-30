@@ -91,6 +91,14 @@ export const loginUser = async (values) => {
   return res.data.data;
 }
 
+export const auth0Login =  async(token) => {
+  const res = await api.post("user/auth0-login",{
+    token: token
+  })
+
+  return res.data.data
+}
+
 export const logoutUser = async () => {
   const {setUser} = useAuth()
   await api.post("user/logout")
@@ -104,6 +112,12 @@ export const updateDetails = async (formData) => {
   const response = await api.patch('/user/update-details', formData);
   return response.data;
 }
+
+export const completeUserProfile = async (username) => {
+  
+    const response = await api.post("user/complete-profile", { username });
+    return response.data.data; // Returns the updated user object
+};
 
 export const requestPasswordReset = async() => {
   const res = await api.post('user/request-reset-password')

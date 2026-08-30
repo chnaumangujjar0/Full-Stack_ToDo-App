@@ -17,6 +17,7 @@ import LoginActivity from './components/pages/LoginActivity'
 import WorkspaceHub from './components/pages/WorkspaceHub'
 import WorkspaceDetails from './components/pages/WorkspaceDetails'
 import TaskForm from './components/common/TaskForm'
+import CompleteProfile from './components/pages/CompleteProfile'
 function App() {
   const {loading} = useAuth()
   const {themeMode} = useTheme()
@@ -31,6 +32,7 @@ function App() {
           <Route path='/signup' element={<SignUp/>} />
           <Route path='/forgot-password' element={<ForgotPassword/>}/>
           <Route element={<ProtectedRoute/>}>
+          <Route path='/complete-profile' element={<CompleteProfile/>} />
             <Route element={<Layout/>}>
               <Route path='/' element={<Home/>}/>
               <Route path='/:id' element={<Detail/>} />
@@ -39,7 +41,6 @@ function App() {
               <Route path='/login-activity' element={<LoginActivity/>}/>
               <Route path='/workspace' element={<WorkspaceHub/>}/>
               <Route path='/workspace/:workspaceId' element={<WorkspaceDetails/>} />
-              <Route element={<TaskForm/>}/>
             </Route>
           </Route>
         </Routes>

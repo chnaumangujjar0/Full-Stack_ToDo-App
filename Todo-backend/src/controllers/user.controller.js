@@ -7,6 +7,8 @@ import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import { UAParser } from "ua-parser-js";
 import {LoginActivity} from "../models/loginActivity.model.js"
+import jwksClient from "jwks-rsa";
+
 const generateAccessAndRefreshToken = async (id) => {
   try {
     console.log(id);
@@ -150,6 +152,98 @@ const login = asyncHandler(async (req, res) => {
     );
 });
 
+const client = jwksClient({
+  jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`
+});
+
+const verifyAuth0Token = (token) => {
+  return new Promise((resolve, reject) => {
+    const getKey = (header, callback) => {
+      client.getSigningKey(header.kid, (err, key) => {
+        if (err) return callback(err);
+        const signingKey = key.publicKey || key.rsaPublicKey;
+        callback(null, signingKey);
+      });
+    };
+
+    jwt.verify(token, getKey, {
+      algorithms: ["RS256"],
+      issuer: `https://${process.env.AUTH0_DOMAIN}/` // Ensure this matches exactly
+    }, (err, decoded) => {
+      if (err) reject(err);
+      else resolve(decoded);
+    });
+  });
+};
+
+const auth0Login = asyncHandler(async (req, res) => {
+  const { token } = req.body;
+  
+  if (!token) {
+    throw new ApiError(400, "Auth0 token is missing");
+  }
+
+  // 👉 2. Verify the token with Auth0
+  let decodedToken;
+  try {
+    decodedToken = await verifyAuth0Token(token);
+  } catch (error) {
+    throw new ApiError(401, "Invalid or expired Auth0 token");
+  }
+  console.log(decodedToken)
+  // Extract the normalized data provided by Auth0
+  const { email, sub, picture, nickname , name} = decodedToken;
+
+  // 👉 3. Check if the user already exists in MongoDB
+  let user = await User.findOne({ email });
+  
+  if (!user) {
+    const baseName = nickname ? nickname.replace(/[^a-zA-Z0-9]/g, "") : "user";
+    const randomHash = sub.slice(-5).replace(/[^a-zA-Z0-9]/g, "x");
+    const tempUsername = `${baseName}_${randomHash}`;
+
+    // Create the placeholder profile
+    user = await User.create({
+      email,
+      username: tempUsername,
+      auth0Id: sub,
+      authProvider: "auth0",
+      avatar: picture,
+      isProfileComplete: false,
+      fullName: name
+    });
+  } else if (!user.auth0Id) {
+    user.auth0Id = sub;
+    user.authProvider = "auth0";
+    await user.save({ validateBeforeSave: false });
+  }
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+  user.refreshToken = refreshToken
+  await user.save()
+  
+
+  const options = {
+    httpOnly: true,
+    secure: true
+  };
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        {
+          user,
+          accessToken,
+          refreshToken
+        },
+        "Auth0 login successful"
+      )
+    );
+});
+
 const currentUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
@@ -257,6 +351,41 @@ const updateDetails = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, user, "Details updated successfully!"));
+});
+
+const completeProfile = asyncHandler(async (req, res) => {
+  const { username } = req.body;
+  const userId = req.user._id; 
+
+  if (!username?.trim()) {
+    throw new ApiError(400, "Username is required");
+  }
+
+  const cleanUsername = username.trim().toLowerCase();
+
+  const existingUser = await User.findOne({ username: cleanUsername });
+  if (existingUser) {
+    throw new ApiError(409, "This username is already taken. Please choose another.");
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    {
+      $set: {
+        username: cleanUsername,
+        isProfileComplete: true,
+      },
+    },
+    { new: true } 
+  ).select("-password -refreshToken"); 
+
+  if (!updatedUser) {
+    throw new ApiError(404, "User not found");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(200, updatedUser, "Profile completed successfully")
+  );
 });
 
 const verifyResetPassword = asyncHandler(async (req, res) => {
@@ -531,5 +660,7 @@ export {
   requestPasswordReset,
   requestForgotPasswordOtp,
   verifyForgotPasswordOtp,
-  changeForgotPassword
+  changeForgotPassword,
+  auth0Login,
+  completeProfile
 };

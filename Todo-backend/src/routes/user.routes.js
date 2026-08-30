@@ -1,6 +1,8 @@
 import { Router } from "express";
 import {
+  auth0Login,
   changeForgotPassword,
+  completeProfile,
   currentUser,
   login,
   logout,
@@ -18,6 +20,8 @@ const router = Router();
 
 router.route("/register").post(registerUser);
 router.route("/login").post(login);
+router.route("/auth0-login").post(auth0Login);
+
 router.route("/logout").post(verifyJwt, logout);
 router.route("/current-user").get(verifyJwt, currentUser);
 router.route("/update-details").patch(
@@ -34,6 +38,7 @@ router.route("/update-details").patch(
   verifyJwt,
   updateDetails,
 );
+router.route("/complete-profile").post(verifyJwt,completeProfile);
 router.route("/refresh-token").post(refreshAccessToken)
 router.route("/request-reset-password").post(verifyJwt,requestPasswordReset)
 router.route("/verify-reset-password").patch(verifyJwt, verifyResetPassword);

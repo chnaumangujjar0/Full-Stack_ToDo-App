@@ -12,8 +12,6 @@ import axios from "axios";
 export default function Login() {
   const navigate = useNavigate();
   const { setUser } = useAuth();
-  const [rememberCheck, setRememberCheck] = useState(false);
-  
   
   const { loginWithPopup, getIdTokenClaims } = useAuth0();
   const [isAuth0Loading, setIsAuth0Loading] = useState(false);
@@ -28,10 +26,6 @@ export default function Login() {
     validationSchema,
     onSubmit: async (values) => {
       try {
-        if (rememberCheck) {
-          localStorage.setItem("username", values.emailOrUsername);
-          localStorage.setItem("password", values.password);
-        }
         const res = await loginUser(values);
         
         localStorage.setItem("accessToken", res.accessToken);
@@ -49,35 +43,29 @@ export default function Login() {
     },
   });
 
-  // 👉 3. The Auth0 Login Handler (Approach B)
   const handleAuth0Login = async () => {
     setIsAuth0Loading(true);
     try {
-      // 1. Open Auth0 popup
       await loginWithPopup({
         authorizationParams: {
           connection: "google-oauth2"
         }
       });
 
-      // 2. Grab the Auth0 ID token
       const claims = await getIdTokenClaims();
       if (!claims) throw new Error("Could not retrieve Auth0 token");
       
       const auth0Token = claims.__raw;
-      console.log(claims)
       const res = await auth0Login(auth0Token)
 
       const userData = res.user;
 
-      // 4. Set custom JWTs in local storage just like manual login
       localStorage.setItem("accessToken", res.accessToken);
       localStorage.setItem("refreshToken", res.refreshToken);
       setUser(userData);
       
       toast.success('Social Login Successful!');
 
-      // 5. The Intercept: Route to complete profile if needed
       if (userData.isProfileComplete === false) {
         navigate("/complete-profile");
       } else {

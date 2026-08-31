@@ -20,7 +20,6 @@ export default function InviteDropdown() {
   useEffect(() => {
     getAllInvites()
     .then((res) => {
-        console.log(res)
         setInvites(res)
     } )
     .catch((err) => console.log(err))

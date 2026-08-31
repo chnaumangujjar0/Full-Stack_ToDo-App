@@ -78,7 +78,6 @@ export const Header = () => {
       socket.on('connect', onConnect);
       socket.on('disconnect', onDisconnect);
       socket.on("kicked_from_workspace", handleKicked);
-      console.log("🚀 Frontend Alert: Attempting to connect to Socket.io...");
       socket.auth = { userId: user?._id };
       // 👉 2. Start listening
       if (!socket.connected) {

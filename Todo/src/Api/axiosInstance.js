@@ -63,7 +63,6 @@ api.interceptors.response.use(
 
                 const newAccessToken = response.data.accessToken || response.data.data?.accessToken;
                 const newRefreshToken = response.data.refreshToken || response.data.data?.user?.refreshToken;
-                console.log(newRefreshToken)
                 if (!newAccessToken) {
                     throw new Error("Backend did not return an access token inside response.data");
                 }

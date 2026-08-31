@@ -67,7 +67,6 @@ const WorkspaceDetails = () => {
 
     const joinWorkspaceRoom = () => {
       if (workspaceId) {
-        console.log("Entering workspace socket room:", workspaceId);
         socket.emit("join_workspace", workspaceId);
       }
     };

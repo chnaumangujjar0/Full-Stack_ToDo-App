@@ -10,7 +10,6 @@ export default function CompleteProfile() {
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
 
-  // 👉 Security Check: If they are already complete, boot them to the dashboard
   useEffect(() => {
     if (user?.isProfileComplete) {
       navigate("/");

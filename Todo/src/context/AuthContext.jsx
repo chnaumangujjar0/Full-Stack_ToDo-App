@@ -19,10 +19,8 @@ const AuthProvider = ({ children }) => {
       }
       try {
         const res = await api.get('user/current-user');
-        console.log("AUTH CONTEXT SUCCESS:", res.data); // <--- ADD THIS
         if (isMounted) setUser(res.data.data); // Check if this should actually be res.data
       } catch (err) {
-        console.error("AUTH CONTEXT FAILED:", err); // <--- ADD THIS
         if (isMounted) setUser(null);
       } finally {
         if (isMounted) setLoading(false);

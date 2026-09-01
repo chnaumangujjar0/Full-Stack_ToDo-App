@@ -1,65 +1,76 @@
 import mongoose,{Schema} from "mongoose";
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
-const userSchema = new Schema({
-        fullName: {
-            type: String,
-            required: true,
-        },
-        username: {
-            type: String,
-            required: true,
-            unique : true,
-            lowercase : true,
-            trim : true,
-            index : true
-        },
-        email: {
-            type: String,
-            required: true,
-            unique : true,
-            lowercase : true,
-            trim : true,
-            index : true
-        },
-        password: {
-            type: String,
-            required: function () {
-                return this.authProvider === 'local';
-            },
-        },
-        avatar: {
-            type: String
-        },
-        coverImage: {
-            type: String
-        },
-        refreshToken: {
-            type: String
-        },
-        resetPasswordOtp: {
-            type: String
-        },
-        resetPasswordExpiry: {
-            type: Date
-        },
-        authProvider: {
-            type: String,
-            enum: ['local', 'auth0'],
-            default: 'local', 
-        },
-        auth0Id: {
-            type: String,
-            unique: true,
-            sparse: true, // Prevents errors for local users who don't have this field
-        },
-        isProfileComplete: {
-            type: Boolean,
-            default: true, // Local users are complete by default since they fill out the signup form
-        },
+
+const userSchema = new Schema(
+  {
+    fullName: {
+      type: String,
+      required: [true, "Full name is required"],
+      trim: true,
+      minlength: [2, "Full name must be at least 2 characters"],
+      maxlength: [100, "Full name cannot exceed 100 characters"],
     },
-    {timestamps: true}
-)
+    username: {
+      type: String,
+      required: [true, "Username is required"],
+      unique: true,
+      lowercase: true,
+      trim: true,
+      minlength: [3, "Username must be at least 3 characters"],
+      maxlength: [30, "Username cannot exceed 30 characters"],
+      index: true,
+    },
+    email: {
+      type: String,
+      required: [true, "Email is required"],
+      unique: true,
+      lowercase: true,
+      trim: true,
+      index: true,
+    },
+
+    password: {
+      type: String,
+      required: function () {
+        return this.authProvider === "local";
+      },
+    },
+    avatar: {
+      type: String,
+      default: null,
+    },
+    coverImage: {
+      type: String,
+      default: null,
+    },
+    authProvider: {
+      type: String,
+      enum: ["local", "auth0"],
+      default: "local",
+    },
+    auth0Id: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    isProfileComplete: {
+      type: Boolean,
+      default: true,
+    },
+    resetPasswordOtp: {
+      type: String,
+      default: null,
+    },
+    resetPasswordExpiry: {
+      type: Date,
+      default: null,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
 userSchema.pre("save", async function(){
     console.log("i am in password hashing")

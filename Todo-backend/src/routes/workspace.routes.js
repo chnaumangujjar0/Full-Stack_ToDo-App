@@ -2,7 +2,6 @@ import { Router } from "express";
 import { verifyJwt } from "../middleware/auth.middleware.js";
 import {
   createWorkspace,
-  deleteMember,
   deleteWorkspace,
   getAllWorkspaces,
   getWorkspaceById,
@@ -16,5 +15,4 @@ router.route("/getWorkspaceById/:workspaceId").get(getWorkspaceById)
 router.route("/create").post(createWorkspace);
 router.route("/:workspaceId/delete").delete(deleteWorkspace)
 router.route("/:workspaceId/update").patch(updateWorkspace)
-router.route("/:workspaceId/manage-member").post(deleteMember)
 export default router;

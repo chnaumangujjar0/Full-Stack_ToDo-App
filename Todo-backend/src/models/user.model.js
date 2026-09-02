@@ -74,12 +74,12 @@ const userSchema = new Schema(
 
 userSchema.pre("save", async function(){
     console.log("i am in password hashing")
-    if(!this.isModified("password") || this.authProvider !== 'local') return;
+    if(!this.isModified("password")) return;
     this.password = await bcrypt.hash(this.password,10)
 })
 
 userSchema.methods.isPasswordCorrect = async function (password) {
-    if (this.authProvider !== 'local' || !this.password) {
+    if (!this.password) {
     return false; 
   }
     return await bcrypt.compare(password,this.password)

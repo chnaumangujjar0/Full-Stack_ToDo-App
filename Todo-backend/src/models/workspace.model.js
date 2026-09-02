@@ -1,20 +1,25 @@
-import mongoose,{Schema} from "mongoose";
-const workspaceSchema = new Schema({
-    owner:{
-        type: mongoose.Types.ObjectId,
-        ref: "User",
-        required: true
-    },
-    name: {
-        type: String,
-        required: true
-    },
-    members: [
-        {
-            type: mongoose.Types.ObjectId,
-            ref: "User",
-        }
-    ],
-})
+import mongoose, { Schema } from "mongoose";
 
-export const Workspace = mongoose.model("Workspace",workspaceSchema)
+const workspaceSchema = new Schema(
+  {
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+
+    name: {
+      type: String,
+      required: [true, "Workspace name is required"],
+      trim: true,
+      minlength: [3, "Workspace name must be at least 3 characters"],
+      maxlength: [50, "Workspace name cannot exceed 50 characters"],
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+export const Workspace = mongoose.model("Workspace", workspaceSchema);

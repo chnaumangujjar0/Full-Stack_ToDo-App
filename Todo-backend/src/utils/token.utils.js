@@ -36,9 +36,6 @@ export const generateAccessAndRefreshToken = async (userId, meta = {}) => {
   try {
     const accessToken = await user.generateAccessToken();
 
-    // Create the session first so we have an _id to embed in the refresh
-    // token. The real refresh token is set (and hashed by the pre-save
-    // hook) right after.
     const session = await Session.create({
       user: user._id,
       refreshToken: "pending",
@@ -65,12 +62,12 @@ export const generateAccessAndRefreshToken = async (userId, meta = {}) => {
 
 export const verifySessionFromRefreshToken = async (incomingRefreshToken) => {
   let decoded;
+  
   try {
     decoded = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
   } catch (error) {
     throw new ApiError(401, "Refresh token is invalid or expired");
   }
-
   const session = await Session.findById(decoded.sid);
   if (!session || session.revokedAt || session.expiresAt < new Date()) {
     throw new ApiError(401, "Session is expired or has been revoked");
@@ -91,10 +88,11 @@ export const verifySessionFromRefreshToken = async (incomingRefreshToken) => {
 export const revokeSessionByRefreshToken = async (incomingRefreshToken) => {
   if (!incomingRefreshToken) return;
   try {
-    const decoded = jwt.decode(incomingRefreshToken);
+    const decoded = jwt.verify(incomingRefreshToken,process.env.REFRESH_TOKEN_SECRET);
     if (decoded?.sid) {
       await Session.findByIdAndUpdate(decoded.sid, { revokedAt: new Date() });
     }
   } catch (error) {
+    throw new ApiError(400,"someting wrong in revoked date")
   }
 };

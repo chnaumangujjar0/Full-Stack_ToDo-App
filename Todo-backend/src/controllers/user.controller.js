@@ -20,6 +20,8 @@ const cookieOptions = {
   secure: true,
 };
 
+const notInclude = "-password -resetPasswordOtp -resetPasswordExpiry -authProvider -auth0Id"
+
 const registerUser = asyncHandler(async (req, res) => {
   const { fullName, username, email, password } = req.body;
 
@@ -96,7 +98,7 @@ const login = asyncHandler(async (req, res) => {
     { ipAddress, userAgent },
   );
 
-  const loggedInUser = await User.findById(existedUser._id).select("-password");
+  const loggedInUser = await User.findById(existedUser._id).select(notInclude);
 
   await LoginActivity.create({
     user: loggedInUser._id,
@@ -169,7 +171,7 @@ const auth0Login = asyncHandler(async (req, res) => {
     status: "success",
   });
 
-  const loggedInUser = await User.findById(user._id).select("-password");
+  const loggedInUser = await User.findById(user._id).select(notInclude);
 
   return res
     .status(200)
@@ -193,14 +195,14 @@ const currentUser = asyncHandler(async (req, res) => {
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
     req.cookies?.refreshToken || req.body?.refreshToken;
-
+  console.log("i am here.........")
   if (!incomingRefreshToken) {
     throw new ApiError(401, "Unauthorized access");
   }
 
   const { decoded } = await verifySessionFromRefreshToken(incomingRefreshToken);
 
-  const user = await User.findById(decoded._id).select("-password");
+  const user = await User.findById(decoded._id).select(notInclude);
   if (!user) {
     throw new ApiError(400, "User not found");
   }
@@ -222,7 +224,6 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 const logout = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
     req.cookies?.refreshToken || req.body?.refreshToken;
-
   await revokeSessionByRefreshToken(incomingRefreshToken);
 
   return res
@@ -256,8 +257,8 @@ const updateDetails = asyncHandler(async (req, res) => {
   const user = await User.findByIdAndUpdate(
     req.user._id,
     { $set: updatedObject },
-    { new: true },
-  ).select("-password");
+    { "returnDocument":"after" },
+  ).select(notInclude);
 
   return res
     .status(200)
@@ -285,8 +286,8 @@ const completeProfile = asyncHandler(async (req, res) => {
   const updatedUser = await User.findByIdAndUpdate(
     userId,
     { $set: { username: cleanUsername, isProfileComplete: true } },
-    { new: true },
-  ).select("-password");
+    { "returnDocument": "after" },
+  ).select(notInclude);
 
   if (!updatedUser) {
     throw new ApiError(404, "User not found");
@@ -454,7 +455,7 @@ const verifyForgotPasswordOtp = asyncHandler(async (req, res) => {
 
 const changeForgotPassword = asyncHandler(async (req, res) => {
   const { newPassword, resetToken } = req.body;
-
+  console.log(newPassword)
   if (!newPassword?.trim()) {
     throw new ApiError(400, "New password is required");
   }

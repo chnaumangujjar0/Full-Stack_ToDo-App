@@ -9,8 +9,7 @@ import {
   isWorkspaceOwner,
   assertCanManageWorkspace,
   assertIsWorkspaceMember,
-} from "../utils/workspaceaccess.utils.js";
-
+} from "../utils/workspaceAccess.utils.js";
 
 export const createWorkspace = asyncHandler(async (req, res) => {
   const { name } = req.body;
@@ -24,10 +23,14 @@ export const createWorkspace = asyncHandler(async (req, res) => {
     owner: req.user._id,
   });
 
+  if(!newWorkspace){
+    throw new ApiError(500, "Failed to create workspace, please try again.");
+  }
+  
     await WorkspaceMember.create({
       workspace: newWorkspace._id,
       user: req.user._id,
-      role: "owner",
+      role: "admin",
       status: "active",
     });
 
@@ -58,7 +61,9 @@ export const getAllWorkspaces = asyncHandler(async (req, res) => {
         _id: "$workspace._id",
         name: "$workspace.name",
         owner: "$workspace.owner",
-        role: "$role",
+        role: {
+          $cond: [{ $eq: ["$workspace.owner", "$user"] }, "owner", "$role"],
+        },
         joinedAt: "$joinedAt",
         createdAt: "$workspace.createdAt",
         updatedAt: "$workspace.updatedAt",
@@ -86,13 +91,7 @@ export const getWorkspaceById = asyncHandler(async (req, res) => {
 
   await assertIsWorkspaceMember(workspace, req.user._id);
 
-  const membership = isWorkspaceOwner(workspace, req.user._id)
-    ? null
-    : await WorkspaceMember.findOne({
-        workspace: workspaceId,
-        user: req.user._id,
-        status: "active",
-      });
+  const isOwner = isWorkspaceOwner(workspace, req.user._id);
 
   const members = await WorkspaceMember.aggregate([
     {
@@ -114,20 +113,34 @@ export const getWorkspaceById = asyncHandler(async (req, res) => {
     {
       $project: {
         _id: 0,
-        role: 1,
+        role: {
+          $cond: [
+            { $eq: ["$user", new mongoose.Types.ObjectId(workspace.owner)] },
+            "owner",
+            "$role",
+          ],
+        },
         joinedAt: 1,
         user: "$userDetails",
       },
     },
   ]);
 
+  let currentUserRole = "owner";
+  if (!isOwner) {
+    const currentUserData = members.find(
+      (m) => m.user._id.toString() === req.user._id.toString()
+    );
+    currentUserRole = currentUserData?.role || "member";
+  }
+
   const response = {
     ...workspace.toObject(),
-    role: isWorkspaceOwner(workspace, req.user._id) ? "owner" : membership.role,
+    role: currentUserRole,
     members,
   };
 
-  
+
   return res
     .status(200)
     .json(new ApiResponse(200, response, "Workspace details fetched successfully!"));
@@ -140,7 +153,7 @@ export const updateWorkspace = asyncHandler(async (req, res) => {
   if (!isValidObjectId(workspaceId)) {
     throw new ApiError(400, "Invalid workspace id.");
   }
-  // BUG FIX: guard against a missing/blank name before calling .trim().
+
   if (!name?.trim()) {
     throw new ApiError(400, "Workspace name is required!");
   }
@@ -149,20 +162,12 @@ export const updateWorkspace = asyncHandler(async (req, res) => {
   if (!workspace) {
     throw new ApiError(404, "Workspace not found.");
   }
-
-  // BUG FIX: no permission check existed here previously - any
-  // authenticated user could rename any workspace by ID.
   await assertCanManageWorkspace(workspace, req.user._id);
 
-  // BUG FIX: `{"returnDocument": "after"}` is a MongoDB-driver option name,
-  // not the documented Mongoose one (`new: true`). Also added
-  // `runValidators: true` so the schema's minlength/maxlength on `name`
-  // actually gets enforced on update (findByIdAndUpdate skips validators
-  // by default).
   const updatedWorkspace = await Workspace.findByIdAndUpdate(
     workspaceId,
     { $set: { name: name.trim() } },
-    { new: true, runValidators: true }
+    { "returnDocument": "after", runValidators: true }
   );
 
   return res

@@ -2,6 +2,7 @@ import mongoose, { isValidObjectId } from "mongoose";
 import { Workspace } from "../models/workspace.model.js";
 import { WorkspaceMember } from "../models/workspaceMember.model.js";
 import { Notification } from "../models/notification.model.js";
+import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/apiResponse.js";
@@ -9,7 +10,7 @@ import {
   isWorkspaceOwner,
   assertCanManageWorkspace,
   assertIsWorkspaceMember,
-} from "../utils/workspaceaccess.utils.js";
+} from "../utils/workspaceAccess.utils.js";
 
 // --- ADD MEMBER ---
 export const addMember = asyncHandler(async (req, res) => {
@@ -33,9 +34,6 @@ export const addMember = asyncHandler(async (req, res) => {
 
   const memberRole = role === "admin" ? "admin" : "member";
 
-  // The (workspace, user) pair is unique, so re-adding a previously
-  // removed member must reactivate their existing row instead of trying
-  // to insert a duplicate.
   const existing = await WorkspaceMember.findOne({
     workspace: workspaceId,
     user: memberId,
@@ -73,6 +71,17 @@ export const addMember = asyncHandler(async (req, res) => {
       message: `You have been added to ${workspace.name}`,
     });
     io.to(room).emit("new_notification", newNotification);
+    const invitedUser = await User.findById(memberId).select(
+      "username avatar fullName"
+    );
+    io.to(workspaceId).emit("invite_response", {
+      _id: memberId,
+      username: invitedUser?.username,
+      avatar: invitedUser?.avatar,
+      fullName: invitedUser?.fullName,
+      role: memberRole,
+      joinedAt: membership.joinedAt,
+    });
   }
 
   return res
@@ -115,7 +124,13 @@ export const getWorkspaceMembers = asyncHandler(async (req, res) => {
     {
       $project: {
         _id: 1,
-        role: 1,
+        role: {
+          $cond: [
+            { $eq: ["$user", new mongoose.Types.ObjectId(workspace.owner)] },
+            "owner",
+            "$role",
+          ],
+        },
         joinedAt: 1,
         user: "$userDetails",
       },
@@ -208,6 +223,7 @@ export const removeMember = asyncHandler(async (req, res) => {
       message: `You have been removed from ${workspace.name}`,
     });
     io.to(room).emit("new_notification", newNotification);
+    io.to(workspaceId).emit("member_removed", { memberId: room });
   }
 
   return res

@@ -87,14 +87,14 @@ export const startCronJobs = () => {
       });
 
       if (result.deletedCount > 0) {
-        console.log(`Database Cleanup: Deleted ${result.deletedCount} notifications older than 15 days.`);
+        console.log(`Database Cleanup: Deleted ${result.deletedCount} activity login older than 15 days.`);
       }
 
     } catch (error) {
       console.error("Error in Login activity cleanup cron job:", error);
     }
   });
-  cron.schedule("34 14 * * *", async () => {
+  cron.schedule("0 0 * * *", async () => {
     console.log("Running scheduled task: Cleaning up old activity");
 
     try {

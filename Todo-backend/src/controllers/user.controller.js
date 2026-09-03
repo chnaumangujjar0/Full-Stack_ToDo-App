@@ -13,7 +13,7 @@ import {
 import { generateOtp, OTP_EXPIRY_MS } from "../utils/otp.utils.js";
 import { sendOtpEmail } from "../utils/mail.utils.js";
 import { getRequestMeta } from "../utils/device.utils.js";
-import { verifyAuth0Token } from "../utils/auth0.utils.js";
+import {  verifyAuth0Token } from "../utils/auth0.utils.js";
 
 const cookieOptions = {
   httpOnly: true,
@@ -68,6 +68,22 @@ const registerUser = asyncHandler(async (req, res) => {
 const login = asyncHandler(async (req, res) => {
   const { identifier, password } = req.body;
 
+  const { ipAddress, userAgent } = getRequestMeta(req);
+
+  const logFailedAttempt = async (userId = null) => {
+    try {
+      await LoginActivity.create({
+        user: userId,
+        ipAddress,
+        deviceInfo: userAgent,
+        status: "failed",
+        authProvider: "local",
+      });
+    } catch (logError) {
+      // Activity logging must never be the reason a login request fails.
+      console.error("Failed to record login activity:", logError);
+    }
+  };
   if (!identifier || !password) {
     throw new ApiError(400, "username or password is required");
   }
@@ -80,6 +96,7 @@ const login = asyncHandler(async (req, res) => {
   });
 
   if (!existedUser) {
+    await logFailedAttempt(null)
     throw new ApiError(
       400,
       "This user with this username or email does not exist!",
@@ -88,10 +105,10 @@ const login = asyncHandler(async (req, res) => {
 
   const isValidPassword = await existedUser.isPasswordCorrect(password);
   if (!isValidPassword) {
+    await logFailedAttempt(null)
     throw new ApiError(401, "Invalid password");
   }
 
-  const { ipAddress, userAgent } = getRequestMeta(req);
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
     existedUser._id,
@@ -122,7 +139,7 @@ const login = asyncHandler(async (req, res) => {
 
 const auth0Login = asyncHandler(async (req, res) => {
   const { token } = req.body;
-
+  const { ipAddress, userAgent } = getRequestMeta(req);
   if (!token) {
     throw new ApiError(400, "Auth0 token is missing");
   }
@@ -131,6 +148,13 @@ const auth0Login = asyncHandler(async (req, res) => {
   try {
     decodedToken = await verifyAuth0Token(token);
   } catch (error) {
+    await LoginActivity.create({
+        user: null,
+        ipAddress,
+        deviceInfo: userAgent,
+        status: "failed",
+        authProvider: "auth0",
+      });
     throw new ApiError(401, "Invalid or expired Auth0 token");
   }
 
@@ -158,7 +182,6 @@ const auth0Login = asyncHandler(async (req, res) => {
     await user.save({ validateBeforeSave: false });
   }
 
-  const { ipAddress, userAgent } = getRequestMeta(req);
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
     user._id,
     { ipAddress, userAgent },
@@ -169,6 +192,7 @@ const auth0Login = asyncHandler(async (req, res) => {
     ipAddress,
     deviceInfo: userAgent,
     status: "success",
+    authProvider: "auth0"
   });
 
   const loggedInUser = await User.findById(user._id).select(notInclude);

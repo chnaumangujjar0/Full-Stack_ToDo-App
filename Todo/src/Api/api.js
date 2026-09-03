@@ -100,9 +100,10 @@ export const auth0Login =  async(token) => {
 }
 
 export const logoutUser = async () => {
-  const {setUser} = useAuth()
-  await api.post("user/logout")
+  const refreshToken = localStorage.getItem("refreshToken")
+  const res = await api.post("user/logout",{refreshToken})
   
+  return res.data
 }
 
 export const updateDetails = async (formData) => {
@@ -139,11 +140,11 @@ export const requestForgotPasswordOtp = async (email) => {
 
 export const verifyForgotPasswordOtp = async (otp,email) => {
   const res = await api.post('user/verify-forgot-password-otp',{otp: otp,email: email.trim()})
-  return res.data
+  return res.data.data
 }
 
-export const changeForgotPasword = async (newPassword,email) => {
-  const res = await api.patch("user/change-forgot-password",{newPassword: newPassword.trim(),email: email.trim()})
+export const changeForgotPasword = async (newPassword,resetToken) => {
+  const res = await api.patch("user/change-forgot-password",{newPassword: newPassword.trim(),resetToken})
   return res.data
 }
 // notification apis
@@ -198,18 +199,34 @@ export const updateWorkspace = async (workspaceId, name) => {
   return res.data.data
 }
 
-export const removeWorkspaceMember = async(workspaceId,memberId) => {
-  const res = await api.post(`workspace/${workspaceId}/manage-member`,{
-    memberId :memberId
+// worksapce members apis
+
+export const removeWorkspaceMember = async (workspaceId,memberId) => {
+  const res = await api.patch(`member/${workspaceId}/delete`,{
+    memberId
+  })
+  return res.data
+}
+
+export const updateMemberRole = async (workspaceId,memberId,role) => {
+  const res = await api.patch(`member/${workspaceId}/role`,{
+    memberId,
+    role
   })
 
   return res.data
 }
 
+export const leaveWorkspace = async (workspaceId) => {
+  const res = await api.delete(`member/${workspaceId}/leave`)
+
+  return res.data
+}
 // invite api 
-export const sendInvite = async (workspaceId,username) => {
+export const sendInvite = async (workspaceId,username,role) => {
   const res = await api.post(`invite/${workspaceId}/send-invite`,{
-    username: username.trim()
+    username: username.trim(),
+    role
   })
   return res.data
 }
@@ -219,7 +236,7 @@ export const getAllInvites = async () => {
   return res.data.data
 }
 
-export const respondToInvite = async (action, inviteId) => {
+export const respondToInvite = async (inviteId,action) => {
   const res = await api.post(`invite/${inviteId}/response`,{
     action
   })

@@ -12,7 +12,7 @@ export const Header = () => {
   const { user,setUser } = useAuth();
   const navigate = useNavigate();
   const [disableBtn, setDisableBtn] = useState(false);
-  const logout = (e) => {
+  const logout = () => {
     setDisableBtn(true);
   
     toast(
@@ -36,13 +36,15 @@ export const Header = () => {
             </button>
             <button
               onClick={() => {
-                logoutUser();
-                closeToast();
-                setDisableBtn(false);
-                localStorage.removeItem("accessToken")
-                localStorage.removeItem("refreshToken")
-                setUser(null)
-                redirect();
+                logoutUser().then(() => {
+                  closeToast();
+                  setDisableBtn(false);
+                  localStorage.removeItem("accessToken")
+                  localStorage.removeItem("refreshToken")
+                  setUser(null)
+                  setTimeout(() => {redirect();},2000)
+                  
+                }).catch((err) => console.log(err))
               }}
               className="px-4 py-1.5 rounded-sm bg-red-700 text-white text-sm hover:bg-red-800 transition-colors"
             >
@@ -56,7 +58,7 @@ export const Header = () => {
   };
 
   const redirect = () => {
-    navigate("/login");
+    navigate("/login")
   };
   useEffect(() => {
       

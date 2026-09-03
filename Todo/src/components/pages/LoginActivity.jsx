@@ -68,11 +68,14 @@ export default function LoginActivity() {
                   <th className="pb-3 px-2 text-sm font-semibold text-gray-600 dark:text-gray-400">
                     Device
                   </th>
-                  <th className="pb-3 px-2 text-sm font-semibold text-gray-600 dark:text-gray-400">
+                  <th className="pb-3 px-2 text-sm font-semibold text-gray-600 dark:text-gray-400 whitespace-nowrap">
                     IP Address
                   </th>
-                  <th className="pb-3  xext-sm font-semibold text-gray-600 dark:text-gray-400">
+                  <th className="pb-3 px-2  xext-sm font-semibold text-gray-600 dark:text-gray-400">
                     Status
+                  </th>
+                  <th className="pb-3 px-2 xext-sm font-semibold text-gray-600 dark:text-gray-400">
+                    Auth Provider
                   </th>
                 </tr>
               </thead>
@@ -113,6 +116,9 @@ export default function LoginActivity() {
                           {session.status.charAt(0).toUpperCase() +
                             session.status.slice(1)}
                         </span>
+                      </td>
+                      <td className="py-4 px-2 text-sm font-mono text-gray-500 dark:text-gray-400 whitespace-wrap">
+                        {session?.authProvider ? session?.authProvider : "NULL"}
                       </td>
                     </tr>
                   ))

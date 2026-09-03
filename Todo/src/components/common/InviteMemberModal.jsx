@@ -1,9 +1,15 @@
 import React, { useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
- import { sendInvite } from "../../Api/api.js"; // Your future API function
+import { sendInvite } from "../../Api/api.js";
 
-const InviteMemberModal = ({ isOpen, onClose, workspaceId, workspaceName }) => {
+const ROLE_OPTIONS = [
+  { value: "member", label: "Member", hint: "Can view and manage tasks" },
+  { value: "admin", label: "Admin", hint: "Can also invite/remove members" },
+];
+
+const InviteMemberModal = ({ isOpen, onClose, workspaceId, workspaceName,onSuccess }) => {
   const [username, setUsername] = useState("");
+  const [role, setRole] = useState("member");
   const [isLoading, setIsLoading] = useState(false);
 
   if (!isOpen) return null;
@@ -15,20 +21,21 @@ const InviteMemberModal = ({ isOpen, onClose, workspaceId, workspaceName }) => {
       return;
     }
     setIsLoading(true);
-    
-    sendInvite(workspaceId,username)
-    .then((res) => {
-        toast.success(`Invite sent to ${username.trim()}!`);
+
+    sendInvite(workspaceId, username, role)
+      .then(() => {
+        
         setUsername("");
-        onClose(); 
-    })
-    .catch( (error) => {
-    console.error(error);
-    const errorMsg = error.response?.data?.message || "Failed to send invite.";
-    toast.error(errorMsg);
-    }).finally(
-        setIsLoading(false)
-    )
+        setRole("member");
+        onClose();
+        onSuccess()
+      })
+      .catch((error) => {
+        console.error(error);
+        const errorMsg = error.response?.data?.message || "Failed to send invite.";
+        toast.error(errorMsg);
+      })
+      .finally(() => setIsLoading(false));
   };
 
   return (
@@ -84,6 +91,35 @@ const InviteMemberModal = ({ isOpen, onClose, workspaceId, workspaceName }) => {
             <p className="text-xs text-stone-500 mt-2">
               The user will receive a notification to accept or decline your request.
             </p>
+          </div>
+
+          <div>
+            <label className="block text-[11px] tracking-[0.2em] uppercase text-stone-400 font-mono mb-2">
+              Role
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {ROLE_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  disabled={isLoading}
+                  onClick={() => setRole(option.value)}
+                  aria-pressed={role === option.value}
+                  className={`text-left px-3 py-2.5 rounded-sm border transition-colors disabled:opacity-50 ${
+                    role === option.value
+                      ? "border-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:border-emerald-500"
+                      : "border-stone-300 dark:border-gray-700 hover:border-stone-400 dark:hover:border-gray-500"
+                  }`}
+                >
+                  <span className="block text-sm font-medium text-stone-900 dark:text-white">
+                    {option.label}
+                  </span>
+                  <span className="block text-xs text-stone-500 dark:text-gray-400 mt-0.5">
+                    {option.hint}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 mt-2">

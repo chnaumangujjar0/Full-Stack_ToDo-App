@@ -30,7 +30,7 @@ export default function Login() {
         
         localStorage.setItem("accessToken", res.accessToken);
         localStorage.setItem("refreshToken", res.refreshToken);
-        setUser(res.user);
+        setUser(res);
 
         toast.success('Welcome back!');
         setTimeout(() => {

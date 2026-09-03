@@ -62,13 +62,12 @@ api.interceptors.response.use(
                 });
 
                 const newAccessToken = response.data.accessToken || response.data.data?.accessToken;
-                const newRefreshToken = response.data.refreshToken || response.data.data?.user?.refreshToken;
+                
                 if (!newAccessToken) {
                     throw new Error("Backend did not return an access token inside response.data");
                 }
 
                 localStorage.setItem('accessToken', newAccessToken);
-                localStorage.setItem('refreshToken', newRefreshToken);
 
                 api.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
                 originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;

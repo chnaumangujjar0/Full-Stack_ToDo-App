@@ -15,15 +15,30 @@ import InviteMemberModal from "../common/InviteMemberModal";
 import UpdateWorkspaceModal from "../common/UpdateWorkSpaceModal";
 import DeleteConfirmToast from "../common/DeleteConfirmToast.jsx";
 import Loader from "../common/Loader.jsx";
-import { getAllWorkspaces, deleteWorkspaceById  } from "@/Api/api"; // TODO: confirm deleteWorkspaceById is the real export name
+import { getAllWorkspaces, deleteWorkspaceById } from "@/Api/api";
 import { useAuth } from "@/context/AuthContext";
+import { socket } from "@/socket";
+const ROLE_BADGE_STYLES = {
+  owner: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
+  admin: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
+  member: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return null;
+  return new Date(dateString).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
 
 const WorkspaceHub = () => {
   const [workspaces, setWorkspaces] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const [shareTarget, setShareTarget] = useState(null); 
+  const [shareTarget, setShareTarget] = useState(null);
   const [updateTarget, setUpdateTarget] = useState(null);
 
   const { user } = useAuth();
@@ -43,8 +58,20 @@ const WorkspaceHub = () => {
 
   useEffect(() => {
     fetchWorkspaces();
-  }, []);
 
+  }, []);
+  useEffect(() => {
+    const handleWorkspaceJoined = (newWorkspace) => {
+      setWorkspaces((prev) => {
+        const isDuplicate = prev.some((ws) => ws._id === newWorkspace._id);
+        if (isDuplicate) return prev;
+        return [newWorkspace, ...prev];
+      });
+    };
+ 
+    socket.on("workspace_joined", handleWorkspaceJoined);
+    return () => socket.off("workspace_joined", handleWorkspaceJoined);
+  }, []);
   const handleDelete = (workspace) => {
     toast(
       ({ closeToast }) => (
@@ -52,7 +79,6 @@ const WorkspaceHub = () => {
           closeToast={closeToast}
           onConfirm={async () => {
             try {
-
               await deleteWorkspaceById(workspace._id);
               toast.success("Workspace deleted.");
               await fetchWorkspaces();
@@ -122,7 +148,16 @@ const WorkspaceHub = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {workspaces.map((workspace) => {
-              const isOwner = workspace.role === "owner";
+              const isOwner = workspace.owner === user._id;
+              const isAdmin = workspace.role === "admin";
+              const canManage = isOwner || isAdmin;
+              const canDelete = isOwner;
+
+              const badgeStyle = ROLE_BADGE_STYLES[workspace.role] ?? ROLE_BADGE_STYLES.member;
+
+              const dateLabel = isOwner
+                ? formatDate(workspace.createdAt) && `Created ${formatDate(workspace.createdAt)}`
+                : formatDate(workspace.joinedAt) && `Joined ${formatDate(workspace.joinedAt)}`;
 
               return (
                 <Link
@@ -137,17 +172,12 @@ const WorkspaceHub = () => {
 
                     <div className="flex items-center gap-1.5 shrink-0">
                       <span
-                        className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${
-                          isOwner
-                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
-                            : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
-                        }`}
+                        className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full ${badgeStyle}`}
                       >
-                        {isOwner ? "OWNER" : "MEMBER"}
+                        {workspace.role}
                       </span>
 
-                      {/* Only the owner can manage the workspace itself */}
-                      {isOwner && (
+                      {canManage && (
                         <DropdownMenu>
                           <DropdownMenuTrigger
                             render={
@@ -184,17 +214,21 @@ const WorkspaceHub = () => {
                               <Pencil size={14} className="mr-2" />
                               Rename
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              variant="destructive"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(workspace);
-                              }}
-                            >
-                              <Trash2 size={14} className="mr-2" />
-                              Delete
-                            </DropdownMenuItem>
+                            {canDelete && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  variant="destructive"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(workspace);
+                                  }}
+                                >
+                                  <Trash2 size={14} className="mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       )}
@@ -203,7 +237,7 @@ const WorkspaceHub = () => {
 
                   <div className="flex justify-between items-end mt-4">
                     <div className="text-sm text-stone-500 dark:text-gray-400 font-medium">
-                      {workspace.members?.length ?? 0} Members
+                      {dateLabel || "\u00A0"}
                     </div>
                     <div className="text-stone-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

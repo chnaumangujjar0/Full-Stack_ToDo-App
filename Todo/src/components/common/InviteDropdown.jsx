@@ -3,32 +3,47 @@ import { UserRoundPlus } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "react-toastify";
-// import { getPendingInvites, respondToInvite } from "../../Api/api";
+import { socket } from "@/socket";
+
+const ROLE_LABELS = {
+  admin: "as Admin",
+  member: "as Member",
+};
 
 export default function InviteDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [invites, setInvites] = useState([]);
+  const [respondingId, setRespondingId] = useState("");
   
-  // We need TWO refs now: one for the button, one for the teleported menu
   const buttonRef = useRef(null);
   const menuRef = useRef(null);
-  
-  // State to hold the exact screen coordinates for the portal
+
   const [coords, setCoords] = useState({ left: 0, top: 0 });
 
-  // 1. Fetch pending invites on load
   useEffect(() => {
     getAllInvites()
-    .then((res) => {
-        setInvites(res)
-    } )
-    .catch((err) => console.log(err))
+      .then((res) => {
+        setInvites(Array.isArray(res) ? res : []);
+      })
+      .catch((err) => console.log(err));
+  }, []);
+
+  useEffect(() => {
+    const handleNewInvite = (invite) => {
+      setInvites((prev) => {
+        const isDuplicate = prev.some((inv) => inv._id === invite._id);
+        if (isDuplicate) return prev;
+        return [invite, ...prev];
+      });
+    };
+
+    socket.on("workspace_invite", handleNewInvite);
+    return () => socket.off("workspace_invite", handleNewInvite);
   }, []);
 
   // 2. Handle clicking outside to close
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Because the menu is portaled to the body, we must check BOTH refs
       if (
         buttonRef.current && !buttonRef.current.contains(event.target) &&
         (!menuRef.current || !menuRef.current.contains(event.target))
@@ -40,30 +55,33 @@ export default function InviteDropdown() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // 3. Handle Accept / Decline Action
-  const handleResponse = async (inviteId, action) => {
-      respondToInvite(action,inviteId)
+  const handleResponse = (inviteId, action) => {
+    console.log(inviteId)
+    setRespondingId(inviteId);
+    respondToInvite(inviteId, action)
       .then(() => {
-          toast.success(`Invite ${action} successfully!`);
-          setInvites((prev) => prev.filter((inv) => inv._id !== inviteId));
-          if (invites.length === 1) setIsOpen(false);
-      }).catch((error) => {
-          console.error(error);
-          toast.error(`Failed to ${action} invite.`);
+        toast.success(`Invite ${action} successfully!`);
+        setInvites((prev) => {
+          const next = prev.filter((inv) => inv._id !== inviteId);
+          if (next.length === 0) setIsOpen(false);
+          return next;
+        });
       })
-    
-    
+      .catch((error) => {
+        console.error(error);
+        toast.error(`Failed to ${action} invite.`);
+      })
+      .finally(() => setRespondingId(""));
   };
 
   // 4. Calculate Coordinates before opening
   const handleToggle = () => {
     if (!isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      
-      // Replicating your original Tailwind classes: left-16 (64px) and -top-20 (-80px)
+
       setCoords({
         left: rect.left + 35 + window.scrollX,
-        top: rect.top - 80 + window.scrollY, 
+        top: rect.top - 80 + window.scrollY,
       });
     }
     setIsOpen(!isOpen);
@@ -87,16 +105,12 @@ export default function InviteDropdown() {
         )}
       </button>
 
-      {/* 
-        PORTAL LOGIC: 
-        If isOpen is true, render this div directly into document.body 
-      */}
       {isOpen && createPortal(
-        <div 
+        <div
           ref={menuRef}
-          style={{ 
-            top: `${coords.top}px`, 
-            left: `${coords.left}px` 
+          style={{
+            top: `${coords.top}px`,
+            left: `${coords.left}px`
           }}
           className="absolute w-80 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-[9999]"
         >
@@ -115,38 +129,47 @@ export default function InviteDropdown() {
                 No pending invites.
               </div>
             ) : (
-              invites.map((invite) => (
-                <div
-                  key={invite._id}
-                  className="px-4 py-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900"
-                >
-                  <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed mb-3">
-                    <span className="font-semibold text-gray-900 dark:text-white">@{invite.inviter.username}</span> invited you to join {" "}
-                    <span className="font-semibold text-stone-900 dark:text-white bg-stone-100 dark:bg-gray-800 px-1 rounded">
-                      {invite.workspace.name}
-                    </span>
-                  </p>
-                  
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleResponse(invite._id, "accepted")}
-                      className="flex-1 py-1.5 text-xs font-medium text-emerald-50 bg-emerald-700 hover:bg-emerald-800 rounded transition-colors"
-                    >
-                      Accept
-                    </button>
-                    <button
-                      onClick={() => handleResponse(invite._id, "declined")}
-                      className="flex-1 py-1.5 text-xs font-medium text-stone-600 dark:text-gray-300 bg-stone-100 dark:bg-gray-800 hover:bg-stone-200 dark:hover:bg-gray-700 rounded transition-colors"
-                    >
-                      Decline
-                    </button>
+              invites.map((invite) => {
+                const isResponding = respondingId === invite._id;
+                const roleLabel = ROLE_LABELS[invite.role];
+                return (
+                  <div
+                    key={invite._id}
+                    className="px-4 py-4 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900"
+                  >
+                    <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed mb-3">
+                      <span className="font-semibold text-gray-900 dark:text-white">@{invite.inviter?.username ?? "SomeOne"}</span> invited you to join {" "}
+                      <span className="font-semibold text-stone-900 dark:text-white bg-stone-100 dark:bg-gray-800 px-1 rounded">
+                        {invite.workspace?.name}
+                      </span>
+                      {roleLabel && (
+                        <span className="text-gray-500 dark:text-gray-400"> {roleLabel}</span>
+                      )}
+                    </p>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleResponse(invite._id, "accepted")}
+                        disabled={isResponding}
+                        className="flex-1 py-1.5 text-xs font-medium text-emerald-50 bg-emerald-700 hover:bg-emerald-800 rounded transition-colors disabled:opacity-50"
+                      >
+                        {isResponding ? "..." : "Accept"}
+                      </button>
+                      <button
+                        onClick={() => handleResponse(invite._id, "declined")}
+                        disabled={isResponding}
+                        className="flex-1 py-1.5 text-xs font-medium text-stone-600 dark:text-gray-300 bg-stone-100 dark:bg-gray-800 hover:bg-stone-200 dark:hover:bg-gray-700 rounded transition-colors disabled:opacity-50"
+                      >
+                        {isResponding ? "..." : "Decline"}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>,
-        document.body 
+        document.body
       )}
     </>
   );

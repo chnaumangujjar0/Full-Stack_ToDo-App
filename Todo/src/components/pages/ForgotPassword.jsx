@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { changeForgotPasword, requestForgotPasswordOtp, verifyForgotPasswordOtp } from "../../Api/api";
-// import { forgotPasswordRequest, forgotPasswordVerify } from "../../Api/api"; // Update with your actual API imports
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -17,7 +16,7 @@ export default function ForgotPassword() {
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
-
+  const [resetToken,setResetToken] = useState(null)
   // --- API Handlers ---
 
   const handleRequestOtp = async (e) => {
@@ -56,7 +55,7 @@ export default function ForgotPassword() {
     try {
       const res = await verifyForgotPasswordOtp(otp,email)
       toast.success("OTP is verified!");
-
+      setResetToken(res.resetToken)
       setStep(3)
     } catch (error) {
       console.log(error);
@@ -76,7 +75,7 @@ export default function ForgotPassword() {
     }
     setIsLoading(true)
     try {
-      await changeForgotPasword(newPassword,email)
+      await changeForgotPasword(newPassword,resetToken)
 
       toast.success("Password changed successsfully.Redirecting...")
       

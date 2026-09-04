@@ -1,32 +1,19 @@
-import mongoose, { isValidObjectId } from "mongoose";
-import { Workspace } from "../models/workspace.model.js";
+import { isValidObjectId } from "mongoose";
 import { WorkspaceMember } from "../models/workspaceMember.model.js";
 import { Notification } from "../models/notification.model.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/apiResponse.js";
-import {
-  isWorkspaceOwner,
-  assertCanManageWorkspace,
-  assertIsWorkspaceMember,
-} from "../utils/workspaceAccess.utils.js";
+import { isWorkspaceOwner } from "../utils/workspaceAccess.utils.js";
 
-// --- ADD MEMBER ---
 export const addMember = asyncHandler(async (req, res) => {
-  const { workspaceId } = req.params;
   const { memberId, role } = req.body;
+  const { workspace } = req;
 
-  if (!isValidObjectId(workspaceId) || !isValidObjectId(memberId)) {
+  if (!isValidObjectId(memberId)) {
     throw new ApiError(400, "Invalid Object Id!");
   }
-
-  const workspace = await Workspace.findById(workspaceId);
-  if (!workspace) {
-    throw new ApiError(404, "Workspace not found.");
-  }
-
-  await assertCanManageWorkspace(workspace, req.user._id);
 
   if (isWorkspaceOwner(workspace, memberId)) {
     throw new ApiError(400, "The workspace owner is already a member.");
@@ -35,7 +22,7 @@ export const addMember = asyncHandler(async (req, res) => {
   const memberRole = role === "admin" ? "admin" : "member";
 
   const existing = await WorkspaceMember.findOne({
-    workspace: workspaceId,
+    workspace: workspace._id,
     user: memberId,
   });
 
@@ -50,7 +37,7 @@ export const addMember = asyncHandler(async (req, res) => {
     membership = await existing.save();
   } else {
     membership = await WorkspaceMember.create({
-      workspace: workspaceId,
+      workspace: workspace._id,
       user: memberId,
       role: memberRole,
     });
@@ -67,14 +54,14 @@ export const addMember = asyncHandler(async (req, res) => {
   if (io) {
     const room = memberId.toString();
     io.to(room).emit("added_to_workspace", {
-      workspaceId,
+      workspaceId: workspace._id,
       message: `You have been added to ${workspace.name}`,
     });
     io.to(room).emit("new_notification", newNotification);
     const invitedUser = await User.findById(memberId).select(
       "username avatar fullName"
     );
-    io.to(workspaceId).emit("invite_response", {
+    io.to(workspace._id.toString()).emit("invite_response", {
       _id: memberId,
       username: invitedUser?.username,
       avatar: invitedUser?.avatar,
@@ -91,23 +78,12 @@ export const addMember = asyncHandler(async (req, res) => {
 
 // --- LIST MEMBERS ---
 export const getWorkspaceMembers = asyncHandler(async (req, res) => {
-  const { workspaceId } = req.params;
-
-  if (!isValidObjectId(workspaceId)) {
-    throw new ApiError(400, "Invalid workspace id.");
-  }
-
-  const workspace = await Workspace.findById(workspaceId);
-  if (!workspace) {
-    throw new ApiError(404, "Workspace not found.");
-  }
-
-  await assertIsWorkspaceMember(workspace, req.user._id);
+  const { workspace } = req;
 
   const members = await WorkspaceMember.aggregate([
     {
       $match: {
-        workspace: new mongoose.Types.ObjectId(workspaceId),
+        workspace: workspace._id,
         status: "active",
       },
     },
@@ -125,11 +101,7 @@ export const getWorkspaceMembers = asyncHandler(async (req, res) => {
       $project: {
         _id: 1,
         role: {
-          $cond: [
-            { $eq: ["$user", new mongoose.Types.ObjectId(workspace.owner)] },
-            "owner",
-            "$role",
-          ],
+          $cond: [{ $eq: ["$user", workspace.owner] }, "owner", "$role"],
         },
         joinedAt: 1,
         user: "$userDetails",
@@ -144,27 +116,19 @@ export const getWorkspaceMembers = asyncHandler(async (req, res) => {
 
 // --- UPDATE MEMBER ROLE ---
 export const updateMemberRole = asyncHandler(async (req, res) => {
-  const { workspaceId } = req.params;
   const { memberId, role } = req.body;
+  const { workspace } = req;
 
-  if (!isValidObjectId(workspaceId) || !isValidObjectId(memberId)) {
+  if (!isValidObjectId(memberId)) {
     throw new ApiError(400, "Invalid Object Id!");
   }
   if (!["admin", "member"].includes(role)) {
     throw new ApiError(400, "Role must be 'admin' or 'member'.");
   }
 
-  const workspace = await Workspace.findById(workspaceId);
-  if (!workspace) {
-    throw new ApiError(404, "Workspace not found.");
-  }
-
-  if (!isWorkspaceOwner(workspace, req.user._id)) {
-    throw new ApiError(403, "Only the workspace owner can change member roles.");
-  }
 
   const membership = await WorkspaceMember.findOneAndUpdate(
-    { workspace: workspaceId, user: memberId, status: "active" },
+    { workspace: workspace._id, user: memberId, status: "active" },
     { $set: { role } },
     { "returnDocument": "after", runValidators: true }
   );
@@ -180,26 +144,19 @@ export const updateMemberRole = asyncHandler(async (req, res) => {
 
 // --- REMOVE MEMBER (kick) ---
 export const removeMember = asyncHandler(async (req, res) => {
-  const { workspaceId } = req.params;
   const { memberId } = req.body;
+  const { workspace } = req;
 
-  if (!isValidObjectId(workspaceId) || !isValidObjectId(memberId)) {
+  if (!isValidObjectId(memberId)) {
     throw new ApiError(400, "Invalid Object Id!");
   }
-
-  const workspace = await Workspace.findById(workspaceId);
-  if (!workspace) {
-    throw new ApiError(404, "Workspace not found.");
-  }
-
-  await assertCanManageWorkspace(workspace, req.user._id);
 
   if (isWorkspaceOwner(workspace, memberId)) {
     throw new ApiError(400, "The workspace owner cannot be removed.");
   }
 
   const updatedMembership = await WorkspaceMember.findOneAndUpdate(
-    { workspace: workspaceId, user: memberId, status: "active" },
+    { workspace: workspace._id, user: memberId, status: "active" },
     { $set: { status: "removed" } },
     { new: true }
   );
@@ -219,11 +176,11 @@ export const removeMember = asyncHandler(async (req, res) => {
   if (io) {
     const room = memberId.toString();
     io.to(room).emit("kicked_from_workspace", {
-      workspaceId,
+      workspaceId: workspace._id,
       message: `You have been removed from ${workspace.name}`,
     });
     io.to(room).emit("new_notification", newNotification);
-    io.to(workspaceId).emit("member_removed", { memberId: room });
+    io.to(workspace._id.toString()).emit("member_removed", { memberId: room });
   }
 
   return res
@@ -231,20 +188,11 @@ export const removeMember = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Member removed successfully!"));
 });
 
-// --- LEAVE WORKSPACE (self-service) ---
+// --- LEAVE WORKSPACE (self-service) --- (route uses requireWorkspaceMember)
 export const leaveWorkspace = asyncHandler(async (req, res) => {
-  const { workspaceId } = req.params;
+  const { workspace, workspaceRole } = req;
 
-  if (!isValidObjectId(workspaceId)) {
-    throw new ApiError(400, "Invalid workspace id.");
-  }
-
-  const workspace = await Workspace.findById(workspaceId);
-  if (!workspace) {
-    throw new ApiError(404, "Workspace not found.");
-  }
-
-  if (isWorkspaceOwner(workspace, req.user._id)) {
+  if (workspaceRole === "owner") {
     throw new ApiError(
       400,
       "The workspace owner cannot leave. Transfer ownership or delete the workspace instead."
@@ -252,7 +200,7 @@ export const leaveWorkspace = asyncHandler(async (req, res) => {
   }
 
   const updatedMembership = await WorkspaceMember.findOneAndUpdate(
-    { workspace: workspaceId, user: req.user._id, status: "active" },
+    { workspace: workspace._id, user: req.user._id, status: "active" },
     { $set: { status: "removed" } },
     { new: true }
   );

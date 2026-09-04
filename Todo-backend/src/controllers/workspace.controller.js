@@ -1,16 +1,12 @@
-import mongoose, { isValidObjectId } from "mongoose";
+import mongoose from "mongoose";
 import { Workspace } from "../models/workspace.model.js";
 import { WorkspaceMember } from "../models/workspaceMember.model.js";
 import { Todo } from "../models/todo.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/apiResponse.js";
-import {
-  isWorkspaceOwner,
-  assertCanManageWorkspace,
-  assertIsWorkspaceMember,
-} from "../utils/workspaceAccess.utils.js";
 
+// --- CREATE WORKSPACE --- (no :workspaceId yet, so no RBAC middleware applies)
 export const createWorkspace = asyncHandler(async (req, res) => {
   const { name } = req.body;
 
@@ -23,16 +19,17 @@ export const createWorkspace = asyncHandler(async (req, res) => {
     owner: req.user._id,
   });
 
-  if(!newWorkspace){
-    throw new ApiError(500, "Failed to create workspace, please try again.");
-  }
-  
+  try {
     await WorkspaceMember.create({
       workspace: newWorkspace._id,
       user: req.user._id,
       role: "admin",
       status: "active",
     });
+  } catch (error) {
+    await Workspace.findByIdAndDelete(newWorkspace._id);
+    throw new ApiError(500, "Failed to create workspace, please try again.");
+  }
 
   return res
     .status(201)
@@ -77,26 +74,12 @@ export const getAllWorkspaces = asyncHandler(async (req, res) => {
 });
 
 export const getWorkspaceById = asyncHandler(async (req, res) => {
-  const { workspaceId } = req.params;
-
-  if (!isValidObjectId(workspaceId)) {
-    throw new ApiError(400, "Invalid workspace id.");
-  }
-
-  const workspace = await Workspace.findById(workspaceId);
-
-  if (!workspace) {
-    throw new ApiError(404, "Workspace not found.");
-  }
-
-  await assertIsWorkspaceMember(workspace, req.user._id);
-
-  const isOwner = isWorkspaceOwner(workspace, req.user._id);
+  const { workspace, workspaceRole } = req;
 
   const members = await WorkspaceMember.aggregate([
     {
       $match: {
-        workspace: new mongoose.Types.ObjectId(workspaceId),
+        workspace: workspace._id,
         status: "active",
       },
     },
@@ -114,11 +97,7 @@ export const getWorkspaceById = asyncHandler(async (req, res) => {
       $project: {
         _id: 0,
         role: {
-          $cond: [
-            { $eq: ["$user", new mongoose.Types.ObjectId(workspace.owner)] },
-            "owner",
-            "$role",
-          ],
+          $cond: [{ $eq: ["$user", workspace.owner] }, "owner", "$role"],
         },
         joinedAt: 1,
         user: "$userDetails",
@@ -126,46 +105,27 @@ export const getWorkspaceById = asyncHandler(async (req, res) => {
     },
   ]);
 
-  let currentUserRole = "owner";
-  if (!isOwner) {
-    const currentUserData = members.find(
-      (m) => m.user._id.toString() === req.user._id.toString()
-    );
-    currentUserRole = currentUserData?.role || "member";
-  }
-
   const response = {
     ...workspace.toObject(),
-    role: currentUserRole,
+    role: workspaceRole,
     members,
   };
-
 
   return res
     .status(200)
     .json(new ApiResponse(200, response, "Workspace details fetched successfully!"));
 });
 
+// --- UPDATE WORKSPACE --- (route uses requireWorkspaceManager: owner or admin)
 export const updateWorkspace = asyncHandler(async (req, res) => {
-  const { workspaceId } = req.params;
   const { name } = req.body;
-
-  if (!isValidObjectId(workspaceId)) {
-    throw new ApiError(400, "Invalid workspace id.");
-  }
 
   if (!name?.trim()) {
     throw new ApiError(400, "Workspace name is required!");
   }
 
-  const workspace = await Workspace.findById(workspaceId);
-  if (!workspace) {
-    throw new ApiError(404, "Workspace not found.");
-  }
-  await assertCanManageWorkspace(workspace, req.user._id);
-
   const updatedWorkspace = await Workspace.findByIdAndUpdate(
-    workspaceId,
+    req.workspace._id,
     { $set: { name: name.trim() } },
     { "returnDocument": "after", runValidators: true }
   );
@@ -176,24 +136,11 @@ export const updateWorkspace = asyncHandler(async (req, res) => {
 });
 
 export const deleteWorkspace = asyncHandler(async (req, res) => {
-  const { workspaceId } = req.params;
+  const { workspace } = req;
 
-  if (!isValidObjectId(workspaceId)) {
-    throw new ApiError(400, "Invalid Object Id.");
-  }
-
-  const workspace = await Workspace.findById(workspaceId);
-  if (!workspace) {
-    throw new ApiError(404, "Workspace not found.");
-  }
-
-  if (!isWorkspaceOwner(workspace, req.user._id)) {
-    throw new ApiError(403, "Only the workspace owner can delete this workspace.");
-  }
-
-  await Workspace.findByIdAndDelete(workspaceId);
-  await Todo.deleteMany({ workspace: workspaceId });
-  await WorkspaceMember.deleteMany({ workspace: workspaceId });
+  await Workspace.findByIdAndDelete(workspace._id);
+  await Todo.deleteMany({ workspace: workspace._id });
+  await WorkspaceMember.deleteMany({ workspace: workspace._id });
 
   return res
     .status(200)

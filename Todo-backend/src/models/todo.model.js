@@ -27,8 +27,9 @@ const todoSchema = new Schema(
             default: false
         },
         workspace: {
-            type: String,
-            default: "none"
+            type: mongoose.Types.ObjectId,
+            ref: "Workspace",
+            default: null
         },
         assignedTo: {
             type: mongoose.Types.ObjectId,
@@ -37,5 +38,19 @@ const todoSchema = new Schema(
     },
     {timestamps: true}
 )
+
+todoSchema.index({
+  workspace: 1,
+  status: 1,
+});
+
+todoSchema.index({
+  workspace: 1,
+  assignedTo: 1,
+});
+
+todoSchema.index({
+  deadline: 1,
+});
 
 export const Todo = mongoose.model("Todo",todoSchema)

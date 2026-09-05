@@ -5,7 +5,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import {
   isWorkspaceOwner,
   getActiveMembership,
-} from "../utils/workspaceAccess.utils.js";
+} from "../utils/workspaceaccess.utils.js";
 
 const ROLE_RANK = {
   member: 1,
